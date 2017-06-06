@@ -1,0 +1,13 @@
+Package: courser
+Type: Package
+Title: Manage Course Activities like slides, clicker, RTutor Problemsets or Peer-Quizzes
+Version: 0.1.0
+Author: Sebastian Kranz
+Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
+Description: Manage Course Activities like slides, clicker, RTutor Problemsets or Peer-Quizzes
+License: GPL >= 2.0
+LazyData: TRUE
+Depends:
+  restorepoint, shinyEvents, stringtools, rmdtools, yaml,
+  shinyEventsUI, shinyEventsLogin,
+  RTutor3, armd, RTutorClicker, peerquiz
