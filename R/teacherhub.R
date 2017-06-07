@@ -4,7 +4,7 @@ examples.teacherhub = function() {
 
   course.dir = "D:/libraries/courser/courses/vwl"
   app = TeacherHubApp(course.dir=course.dir,init.userid="kranz", need.password=FALSE, need.user=TRUE, fixed.password="ompo", use.signup=FALSE)
-  res = viewApp(app)
+  res = viewApp(app, port=app$glob$opts$teacherhub$port,launch.browser = rstudioapi::viewer)
 
   if (dir.exists(res)) {
     restore.point.options(display.restore.point = TRUE)
@@ -76,7 +76,7 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"settings/settin
     opts$base_url = "localhost"
     opts$clicker.dir = file.path(course.dir,"clicker")
     opts$teachers.dir = file.path(course.dir,"teachers")
-    opts$present.shiny.dir = file.path(course.dir,"shiny-server","present")
+    opts$present.shiny.dir = file.path(course.dir, "shiny-server","present","slides")
   } else {
     opts$local = FALSE
     opts$clicker.dir = "/srv/clicker"
@@ -226,7 +226,7 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
 
   opts = app$glob$opts
 
-  shiny.dir = first.non.null(opts$present$shiny.dir,"/srv/shiny-server/present")
+  shiny.dir = first.non.null(opts$present.shiny.dir,"/srv/shiny-server/present")
 
 
   app.base.dir = paste0(shiny.dir, file.path.diff(slides.dir, app$glob$course.dir))

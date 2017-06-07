@@ -1,0 +1,14 @@
+# Einstellungen
+
+Email: {{formField("email")}}
+
+Spitzname: {{formField("nickname")}}
+
+Der Spitzname wird allen Nutzern angezeigt.
+
+Geschlecht: {{formField("gender")}}
+
+Datenverwendung für Forschungszwecke: {{formField("dataUsage")}}
+
+Ich erlaube es meine Daten in anonymisierter Form für Forschungszwecke zu verwenden und zu teilen.
+

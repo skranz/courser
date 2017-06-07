@@ -1,0 +1,31 @@
+fields:
+  email:
+    label: 'Email'
+    readonly: TRUE
+  nick:
+    label: 'Alias'
+    help: |
+      Ihr Alias ist der Name der allen Nutzern angezeigt wird.
+      Bitte vermeiden Sie reale Namen, sondern nutzen Sie Namen, die
+      klar als Fantasienamen erkennbar sind.
+  gender:
+    label: 'Geschlecht'
+    choices: {'Männlich': m, 'Weiblich': f}
+  allowData:
+    label: 'Anonymisierte Daten dürfen für Forschungszwecke genutzt und weitergegeben werden'
+    choices: {'Erlauben': TRUE, 'Verbieten': FALSE}
+    help: |
+      Wir würden gerne anonymierte Daten für Forschungszwecke nutzen.
+      Ein wichtiges Ziel ist es, die Qualität der Lehre zu verbessern.
+      Um anderen Forschern die Möglichkeit zu geben, Ergebnisse zu replizieren,
+      ist es sehr hilfreich die Daten einer Analyse weitergeben zu können.
+      Ihre Namen und Emailadressen werden aber selbstverständlich vorher gelöscht,
+      auch werden keine Chatmitteilungen analysiert oder weitergegeben.
+  allowGrade:
+    label: 'Anonymisierte Daten dürfen mit Klausurnote verknüpft werden'
+    choices: {'Erlauben': TRUE, 'Verbieten': FALSE}
+    help: |
+      Um den Lernerfolg verschiedener interaktiver Zusatzmodule besser
+      einschätzen zu können, würden wir gerne in den anonymisierten Daten
+      für Forschungszwecke auch ihre Klausurnote angeben,
+      wenn Sie dies erlauben.
