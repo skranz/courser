@@ -20,7 +20,7 @@ student.schema = function(app=getApp()) {
 get.studentdb = function(course.dir = cp$course.dir, db=app$glob[["studentdb"]], app = getApp(), cp=app$cp) {
   if (!is.null(db)) return(db)
 
-  db.dir = file.path(course.dir, "db")
+  db.dir = file.path(course.dir,"course", "db")
   db.file = file.path(db.dir,"students.sqlite")
   if (!file.exists(db.file)) {
     db = create.studentdb(course.dir=course.dir)
@@ -35,7 +35,7 @@ get.studentdb = function(course.dir = cp$course.dir, db=app$glob[["studentdb"]],
 create.studentdb = function(course.dir, schema.file = NULL) {
   restore.point("create.studentdb")
 
-  db.dir = file.path(course.dir, "db")
+  db.dir = file.path(course.dir,"course", "db")
   if (!dir.exists(db.dir))
     dir.create(db.dir)
 
@@ -130,7 +130,7 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
 
   ui = tabsetPanel(
     tabPanel(cp$courseid,cp$cp.ui),
-    tabPanel("Settings",cp$settings.ui)
+    tabPanel(app$glob$strings$setting_tab,cp$settings.ui)
   )
 
   setUI("mainUI",ui)
@@ -151,7 +151,7 @@ student.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), submi
 
 
 
-compile.coursepage = function(course.dir, page.file = file.path(course.dir,"course_page.Rmd"), cp=app$cp, app=getApp()) {
+compile.coursepage = function(course.dir, page.file = file.path(course.dir,"course", "course_page.Rmd"), cp=app$cp, app=getApp()) {
   cr = rmdtools::compile.rmd(file = page.file)
   cr
 }

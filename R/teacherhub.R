@@ -66,7 +66,7 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
   app
 }
 
-init.th.opts = function(course.dir, file = file.path(course.dir,"settings/settings.yaml")) {
+init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings/settings.yaml")) {
   restore.point("init.th.opts")
 
   opts = yaml.load_file(file)
@@ -74,9 +74,8 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"settings/settin
 
   if (isTRUE(opts$local)) {
     opts$base_url = "localhost"
-    opts$clicker.dir = file.path(course.dir,"clicker")
-    opts$teachers.dir = file.path(course.dir,"teachers")
-    opts$present.shiny.dir = file.path(course.dir, "shiny-server","present","slides")
+    opts$clicker.dir = file.path(course.dir,"course", "clicker")
+    opts$present.shiny.dir = file.path(course.dir,"course",  "shiny-server","present","slides")
   } else {
     opts$local = FALSE
     opts$clicker.dir = "/srv/clicker"
