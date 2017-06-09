@@ -1,6 +1,6 @@
 fields:
-  email:
-    label: 'Email'
+  userid:
+    label: 'Nutzerkennung'
     readonly: TRUE
   nick:
     label: 'Alias'

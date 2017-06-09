@@ -1,0 +1,12 @@
+# Tables for simple user management
+students:
+  descr: students table
+  table:
+    userid: VARCHAR(255)
+    email: VARCHAR(255)
+    nick: VARCHAR(255)
+    gender: CHARACTER(1)
+    allowData: BOOLEAN
+    allowGrade: BOOLEAN
+  indexes:
+    - "CREATE UNIQUE INDEX students1 on students (userid)"

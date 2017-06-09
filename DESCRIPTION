@@ -10,4 +10,4 @@ LazyData: TRUE
 Depends:
   restorepoint, shinyEvents, stringtools, rmdtools, yaml,
   shinyEventsUI, shinyEventsLogin,
-  RTutor2, armd, RTutorClicker, peerquiz, webforms
+  RTutor2, armd, RTutorClicker, peerquiz, webforms, dbmisc
