@@ -61,8 +61,15 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
 
   cp = as.environment(opts)
 
+  if (is.null(app$glob$strings)) {
+    string.file = system.file(file.path("forms",cp$lang,"strings.yaml"), package="courser")
+    app$glob$strings = read.yaml(string.file)
+
+  }
+
+
   app$cp = cp
-  cp$cr = compile.coursepage(course.dir=course.dir)
+  cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
   lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",...)
@@ -88,7 +95,8 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
   # student does not yet exist
   # show modal settings window
   if (NROW(cp$stud) == 0) {
-    settings.ui = student.settings.ui(cp=cp, submitBtn = actionButton("settingsModalBtn","Save and continue"))
+    label = app$glob$strings$setting_btn
+    settings.ui = student.settings.ui(cp=cp, submitBtn = actionButton("settingsModalBtn",label))
     add.form.handlers(form=cp$settings.form,btn.id="settingsModalBtn",function(values,...)  {
       args = list(...)
       restore.point("settingsModalBtn")
@@ -106,9 +114,10 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
       coursepage.login()
     })
 
+    title = replace.whiskers(app$glob$strings$setting_title, list(cp$courseid))
     showModal(modalDialog(
       settings.ui,
-      title = "Please enter your data",
+      title = title,
       easyClose = FALSE,footer = NULL
     ))
     return()
@@ -116,7 +125,7 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
   cp$stud = as.list(cp$stud)
 
 
-  cp$cp.ui = rmdtools::render.compiled.rmd(cp$cr, envir=cp,out.type = "shiny")
+  cp$cp.ui = rmdtools::render.compiled.rmd(cp$cr, envir=cp$stud,out.type = "shiny")
   cp$settings.ui = student.settings.ui(cp=cp,values = cp$stud)
 
   ui = tabsetPanel(
@@ -142,7 +151,7 @@ student.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), submi
 
 
 
-compile.coursepage = function(course.dir, page.file = file.path(course.dir,"course_page.Rmd")) {
+compile.coursepage = function(course.dir, page.file = file.path(course.dir,"course_page.Rmd"), cp=app$cp, app=getApp()) {
   cr = rmdtools::compile.rmd(file = page.file)
   cr
 }

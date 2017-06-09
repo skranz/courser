@@ -15,8 +15,10 @@ fields:
     label: 'Anonymisierte Daten dürfen für Forschungszwecke genutzt und weitergegeben werden'
     choices: {'Erlauben': TRUE, 'Verbieten': FALSE}
     help: |
-      Wir würden gerne anonymierte Daten für Forschungszwecke nutzen.
-      Ein wichtiges Ziel ist es, die Qualität der Lehre zu verbessern.
+      Wir würden gerne anonymierte Daten für Forschungszwecke nutzen
+      und würden uns sehr freuen, wenn Sie uns die anonymisierte Nutzung
+      Ihrer Daten erlauben. Ein wichtiges Ziel ist es, die Qualität der Lehre zu verbessern.
+
       Um anderen Forschern die Möglichkeit zu geben, Ergebnisse zu replizieren,
       ist es sehr hilfreich die Daten einer Analyse weitergeben zu können.
       Ihre Namen und Emailadressen werden aber selbstverständlich vorher gelöscht,
