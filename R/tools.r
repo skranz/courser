@@ -1,3 +1,22 @@
+try.with.warn = function(..., silent=TRUE) {
+  ow = getOption("warn")
+  options(warn=0)
+  res = try(..., silent=silent)
+  if (is(res,"try-error")) {
+    warn.msg = paste0(unlist(capture.output(warnings())), collapse="\n")
+    err.msg = as.character(res)
+    if (nchar(warn.msg)>0) {
+      msg = paste0(warn.msg,"\n",err.msg)
+    } else {
+      msg = err.msg
+    }
+    res = list(ok=FALSE, err.msg = err.msg ,warn.msg = warn.msg, msg=msg)
+    class(res)=c("error","list")
+  }
+  options(warn=ow)
+  res
+}
+
 has.col = function(x,col) {
   col %in% names(x)
 }

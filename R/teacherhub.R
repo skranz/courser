@@ -136,7 +136,8 @@ teacher.hub.main.ui = function(app=getApp()) {
   panes = jqueryLayoutPanes(id="mainPanes",json.opts=json.opts,
     north = div(p("TeacherHub"),thinHR()),
     west = div(uiOutput("westUI")),
-    center = div(uiOutput("centerUI"))
+    center = div(uiOutput("centerUI")),
+    south = div(uiOutput("thAlert"))
   )
 
   ui = bootstrapPage(
@@ -162,10 +163,16 @@ show.teacher.hub.ui = function(th=app$th,app=getApp()) {
     ,filetreeButtons(treeId,c("Upload"))
   ))
 
+
+
   setUI("centerUI",HTML(""))
-  show.jquery.pane("mainPanes",c("west","north"))
+  #setUI("southUI",uiOutput("thAlerts"))
+
+  show.jquery.pane("mainPanes",c("west","north","south"))
 
   classEventHandler("thShowSlidesBtn", event = "click",stop.propagation = TRUE, fun=th.show.slides.click)
+  classEventHandler("thCompileSlidesBtn", event = "click",stop.propagation = TRUE, fun=th.compile.slides.click)
+  classEventHandler("thEditFileBtn", event = "click",stop.propagation = TRUE, fun=th.edit.file.click)
   #setUI("westUI",tree)
   #setUI("centerUI",HTML(""))
 }
@@ -212,13 +219,39 @@ teacher.hub.modify.file.tree.nodes = function(cur.dir, label.nodes, head.nodes, 
     file.nodes$col2 <- sapply(file.nodes$itemId, function(slide) {
       as.character(smallButton(id=paste0("thShowSlides_",slide),class.add = "thShowSlidesBtn",label = "Show", `data-slide`=slide,`data-dir`=file.path(cur.dir,slide)))
     })
+  # directly in a slide folder
+  } else if (below==2 & folders[2]=="slides") {
+    label.nodes$title = paste0("Slides ", folders[2])
+    label.nodes$col2 = ""
+
+    file.type = tolower(tools::file_ext(file.nodes$itemId))
+    is.rmd = file.type == "rmd"
+
+    file.nodes$col2[is.rmd] = sapply(file.nodes$itemId[is.rmd], function(file) {
+      as.character(
+        tagList(
+          smallButton(id=paste0("thShowSlides_",file),class.add = "thShowSlidesBtn",label = "Show",`data-slide`=folders[1], `data-file`=file,`data-dir`=cur.dir),
+          smallButton(id=paste0("thCompileSlides_",file),class.add = "thCompileSlidesBtn",label = "Compile", `data-file`=file,`data-dir`=cur.dir),
+          smallButton(id=paste0("thEditFile_",file),class.add = "thEditFileBtn",label = "Edit", `data-file`=file,`data-dir`=cur.dir)
+          )
+        )
+    })
   }
+
 
   nlist(label.nodes, head.nodes, file.nodes)
 }
 
+th.edit.file.click = function(data,..., courseid = app$courseid, app=getApp(), th=app$th) {
+  restore.point("th.edit.file.click")
+  file = data$file
+  dir = data$dir
+  th.show.edit.ui(file=file, dir=dir)
+}
+
 th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(), th=app$th) {
   restore.point("th.show.slides.click")
+  file = data$file
   slides = data$slide
   slides.dir = data$dir
 
@@ -252,6 +285,31 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
   }
 
 }
+
+
+
+th.compile.slides.click = function(data,..., courseid = app$courseid, app=getApp(), th=app$th) {
+  restore.point("th.compile.slides.click")
+  file = data$file
+  dir = data$dir
+  long.file = file.path(dir, file)
+
+  figure.dir = file.path(dir,"figure")
+  if (!dir.exists(figure.dir)) {
+    dir.create(figure.dir)
+  }
+
+  ret = try.with.warn({
+    am = parse.armd(file = long.file, dir=dir,figure.dir = figure.dir)
+    armd.to.ps(am = am,dir = dir, write.ps.rmd=FALSE, copy.into.global.env=FALSE)
+  })
+  if (is(ret,"error")) {
+    th.alert(html = colored.html(as.character(ret$msg), color="red"))
+  } else {
+    th.alert("Successfully compiled.")
+  }
+}
+
 
 shiny.to.js.html = function(txt,quotes='"') {
   txt = paste0(as.character(txt),collapse="")
@@ -290,5 +348,32 @@ file.path.diff = function(path1, path2) {
 
   if (nchar(common)==0) return(path1)
   str.right.of(path1,common)
+
+}
+
+th.alert = function(msg="",html=msg,ui=HTML(html), millis=Inf) {
+  timedMessage(id="thAlert",ui=ui, millis=millis)
+}
+
+th.show.edit.ui = function(file, dir=NULL, app=getApp()) {
+  restore.point("th.show.edit.ui")
+  if (!is.null(dir)) file = file.path(dir, file)
+  txt = read.as.utf8(file,sep.lines = FALSE)
+  app$editFile = file
+  ui = tagList(
+    tags$h6(file),
+    smallButton("thEditSave", "Save", form.ids = "thEditAce"),
+  	HTML(aceEditorHtml("thEditAce",value = txt ,wordWrap = TRUE))
+  )
+  buttonHandler("thEditSave", function(...,formValues, app=getApp()) {
+    txt = formValues[["thEditAce"]]
+    file = app$editFile
+    restore.point("thEditSaveClick")
+    #writeUtf8(txt,file)
+    writeLines(sep.lines(txt), file,useBytes = TRUE)
+    cat("\nsave changes...")
+  })
+  setUI("centerUI", ui)
+  dsetUI("centerUI", ui)
 
 }

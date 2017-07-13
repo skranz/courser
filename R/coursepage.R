@@ -155,3 +155,16 @@ compile.coursepage = function(course.dir, page.file = file.path(course.dir,"cour
   cr = rmdtools::compile.rmd(file = page.file)
   cr
 }
+
+courser_current_tasks = function(...) {
+  HTML("Current tasks not yet implemented.")
+}
+
+
+courser_repeat_clicker_quiz = function(...) {
+  HTML("Repetition of clicker quizzes from lecture not yet implemented.")
+}
+
+courser_ranglists = function(...) {
+  HTML("Rankings not yet implemented.")
+}
