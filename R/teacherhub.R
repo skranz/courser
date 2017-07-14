@@ -273,9 +273,9 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
   app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts)
 
   # add course to clicker
-  write.clicker.running(courseid = courseid,clicker.dir = clicker.dir)
+  #write.clicker.running(courseid = courseid,clicker.dir = clicker.dir)
 
-  url = paste0(opts$base_url,":", opts$present$port, "/present/teachers/", app$th$userid,"/courses/", courseid,"/slides/",slides,"/app/s")
+  url = paste0(opts$base_url,":", opts$present$port, "/present/slides/",slides,"/app")
 
   if (isTRUE(opts$local)) {
     stopApp(app.dir)

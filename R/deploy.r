@@ -47,5 +47,3 @@ make.dir = function(dir,..., recursive=TRUE) {
   if (dir.exists(dir)) return()
   dir.create(dir,..., recursive=recursive)
 }
-
-make.course.clicker.app = function()

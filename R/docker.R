@@ -1,27 +1,26 @@
 examples.run.docker.container = function() {
-
-  tgroup.dir = "D:/libraries/RTutorTeacher/teacherhub/tgroups/kranz"
-  opts = yaml.load_file(file.path(tgroup.dir,"settings","settings.yaml"))
-  tgroup.dir = "/home/sk/docker/RTutorTeacher/tgroups/kranz"
-
-  th.make.docker.script(tgroup.dir, opts=opts)
+  source.dir ="D:/libraries/courser/courses/vwl"
+  opts = read.yaml(file=file.path(source.dir,"course", "settings","settings.yaml"))
+  course.dir = "D:/libraries/courser/courses/vwl"
+  courser.make.docker.script(course.dir, opts=opts)
 
   #th.run.docker.container(tgroup.dir)
 }
 
-th.make.docker.script = function(tgroup.dir, opts = yaml.load_file(file.path(tgroup.dir,"settings","settings.yaml")), image="skranz/rtutorteacher_man", use.rstudio = TRUE) {
-  restore.point("run.docker.container")
+courser.make.docker.script = function(course.dir, opts = read.yaml(file=file.path(course.dir,"course", "settings","settings.yaml")), image="skranz/courser", use.rstudio = TRUE, rstudio.port=8711) {
+  restore.point("courser.make.docker.script")
+
+  opts = make.courser.container.settings(opts)
+
+  shiny.dir = file.path(course.dir,"shiny-server")
 
 
 
-  opts = make.th.container.settings(opts)
-
-
-  shiny.dir = file.path(tgroup.dir,"shiny-server")
-  teachers.dir = file.path(tgroup.dir,"teachers")
-  clicker.dir = file.path(tgroup.dir,"clicker")
+  clicker.dir = file.path(course.dir,"course", "clicker")
+  #teachers.dir = file.path(tgroup.dir,"teachers")
+  #clicker.dir = file.path(tgroup.dir,"clicker")
   present.dir = file.path(shiny.dir,"present")
-  log.dir = file.path(tgroup.dir,"log")
+  log.dir = file.path(course.dir,"course", "log")
 
 
   code = paste0(
@@ -34,9 +33,9 @@ docker pull ", image,"
 
 
   rstudio = if (use.rstudio) {
-    paste0("-p 8711:8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword> -e RUN_RSTUDIO=yes")
+    paste0("-p ",rstudio.port,":8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword>")
   } else {
-    "-e RUN_RSTUDIO=no"
+    ""
   }
 
   # teacherhub
@@ -44,7 +43,7 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',tgroup.dir,':/srv/tgroup -v ',teachers.dir,':/srv/teachers -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ' ,image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',course.dir,':/srv/course -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ' ,image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -53,7 +52,7 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -e ROOT=FALSE -e RUN_RSTUDIO=no -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',teachers.dir,':/srv/teachers -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -63,7 +62,7 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -e ROOT=FALSE -e RUN_RSTUDIO=no -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,'  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,'  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -73,12 +72,12 @@ docker pull ", image,"
 }
 
 
-th.run.docker.container = function(tgroup.dir, tag="latest") {
+courser.run.docker.container = function(tgroup.dir, tag="latest") {
   restore.point("run.docker.container")
 
   opts = yaml.load_file(file.path(tgroup.dir,"settings","settings.yaml"))
 
-  opts = make.th.container.settings(opts)
+  opts = make.courser.container.settings(opts)
 
 
   shiny.dir = file.path(tgroup.dir,"shiny-server")
@@ -129,7 +128,7 @@ restart.container = function(name) {
   system(paste0("docker start ", name))
 }
 
-make.th.container.settings = function(opts) {
+make.courser.container.settings = function(opts) {
   fields = c("teacherhub","present","clicker")
 
   for (field in fields) {
