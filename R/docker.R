@@ -2,6 +2,8 @@ examples.run.docker.container = function() {
   source.dir ="D:/libraries/courser/courses/vwl"
   opts = read.yaml(file=file.path(source.dir,"course", "settings","settings.yaml"))
   course.dir = "D:/libraries/courser/courses/vwl"
+
+  course.dir = "/home/skranz/docker/courses/vwl"
   courser.make.docker.script(course.dir, opts=opts)
 
   #th.run.docker.container(tgroup.dir)
@@ -12,13 +14,12 @@ courser.make.docker.script = function(course.dir, opts = read.yaml(file=file.pat
 
   opts = make.courser.container.settings(opts)
 
-  shiny.dir = file.path(course.dir,"shiny-server")
-
+  shiny.dir = file.path(course.dir,"course", "shiny-server")
 
 
   clicker.dir = file.path(course.dir,"course", "clicker")
-  #teachers.dir = file.path(tgroup.dir,"teachers")
-  #clicker.dir = file.path(tgroup.dir,"clicker")
+  slides.dir = file.path(course.dir,"slides")
+
   present.dir = file.path(shiny.dir,"present")
   log.dir = file.path(course.dir,"course", "log")
 
@@ -43,7 +44,7 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',course.dir,':/srv/course -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ' ,image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',course.dir,':/srv/course ' ,image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -52,7 +53,7 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ', slides.dir,':/srv/slides/ -v ',' -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 

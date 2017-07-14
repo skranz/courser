@@ -258,17 +258,13 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
 
   opts = app$glob$opts
 
-  shiny.dir = first.non.null(opts$present.shiny.dir,"/srv/shiny-server/present")
 
+  #present.dir = file.path(course.dir,"course","shiny-server","present")
+  #app.base.dir = paste0(shiny.dir, file.path.diff(slides.dir, app$glob$course.dir))
 
-  app.base.dir = paste0(shiny.dir, file.path.diff(slides.dir, app$glob$course.dir))
-
-  if (!opts$local) {
-    slides.dir = file.path()
-  }
-
-  clicker.dir = opts$clicker.dir
-
+  #if (!opts$local) {
+  #  slides.dir = file.path()
+  #}
 
   app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts)
 

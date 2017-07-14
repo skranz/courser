@@ -30,12 +30,13 @@ presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.
   app
 }
 
-makePresenterAppDir = function(courseid,slides,teacher, opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = TRUE) {
+makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE) {
   restore.point("makePresenterAppDir")
   #stop()
 
-  app.base.dir = file.path(opts$present.shiny.dir,slides)
-  app.dir = file.path(app.base.dir,hash[1])
+  course.dir = opts$course.dir
+  app.base.dir = file.path(course.dir,"course","shiny-server","present")
+  app.dir = file.path(app.base.dir, slides)
 
   if (del.old.app.dirs) {
     dirs = setdiff(list.dirs(app.base.dir, recursive=FALSE),app.dir)
@@ -48,26 +49,35 @@ makePresenterAppDir = function(courseid,slides,teacher, opts, hash=random.string
     dir.create(app.dir,recursive = TRUE)
   }
 
-  slides.dir = file.path(opts$course.dir,"slides",slides)
+  if (opts$local) {
+    slides.dir = file.path(opts$course.dir,"slides",slides)
+    clicker.dir = file.path(opts$course.dir,"course","clicker")
 
+  # On a docker server, we have a fixed directory structure
+  } else {
+    slides.dir = file.path("/srv/slides",slides)
+    clicker.dir = "/srv/clicker"
+  }
+
+  # token.dir not yet used
+  token.dir = NA
   code = paste0('
 # Automatically generated presentation app
 
 library("courser")
 slides.dir = "',slides.dir,'"
 clicker.dir = "',opts$clicker.dir,'"
-teacher = "', teacher,'"
 token.dir = "',token.dir,'"
 courseid = "',courseid,'"
 
-app = presenterApp(courseid=courseid, slides.dir=slides.dir, token.dir=token.dir, clicker.dir=clicker.dir, teacher=teacher)
+app = presenterApp(courseid=courseid, slides.dir=slides.dir, token.dir=token.dir, clicker.dir=clicker.dir)
 
 appReadyToRun(app)
 
 shinyApp(ui = app$ui, server = app$server)
 ')
   app.file = file.path(app.dir, "app.R")
-  writeLines(code, app.file)
+  try(writeLines(code, app.file))
 
   app.dir
 }
