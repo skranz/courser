@@ -46,7 +46,8 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
   }
 
   if (!dir.exists(app.dir)) {
-    dir.create(app.dir,recursive = TRUE, mode="744")
+    #dir.create(app.dir,recursive = TRUE, mode="744")
+    dir.create(app.dir,recursive = TRUE, mode="777")
   }
   figure.dir = file.path(app.dir,"figure")
   if (!dir.exists(figure.dir)) {
