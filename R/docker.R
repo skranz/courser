@@ -9,7 +9,7 @@ examples.run.docker.container = function() {
   #th.run.docker.container(tgroup.dir)
 }
 
-courser.make.docker.script = function(course.dir, opts = read.yaml(file=file.path(course.dir,"course", "settings","settings.yaml")), image="skranz/courser", use.rstudio = TRUE, rstudio.port=8711) {
+courser.make.docker.script = function(course.dir, opts = read.yaml(file=file.path(course.dir,"course", "settings","settings.yaml")), image="skranz/courser", use.rstudio = TRUE, rstudio.port.add=5600) {
   restore.point("courser.make.docker.script")
 
   opts = make.courser.container.settings(opts)
@@ -33,16 +33,14 @@ docker pull ", image,"
 ")
 
 
-  rstudio = if (use.rstudio) {
-    paste0("-p ",rstudio.port,":8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword>")
-  } else {
-    ""
-  }
 
   # teacherhub
   field = "teacherhub"
   name = opts[[field]]$container
   port = opts[[field]]$port
+  rstudio = if (use.rstudio) {
+    paste0("-p ",port+rstudio.port.add,":8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword>")
+  } else {""}
 
   # link course/shiny-server/teacherhub directly to /srv/shiny-server
   run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/ -v ',course.dir,':/srv/course ' ,image)
@@ -53,9 +51,12 @@ docker pull ", image,"
   field = "present"
   name = opts[[field]]$container
   port = opts[[field]]$port
+  rstudio = if (use.rstudio) {
+    paste0("-p ",port+rstudio.port.add,":8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword>")
+  } else {""}
 
   # link course/shiny-server/present directly to /srv/shiny-server
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/ -v ', slides.dir,':/srv/slides/ -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/ -v ', slides.dir,':/srv/slides/ -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -64,9 +65,12 @@ docker pull ", image,"
   field = "clicker"
   name = opts[[field]]$container
   port = opts[[field]]$port
+  rstudio = if (use.rstudio) {
+    paste0("-p ",port+rstudio.port.add,":8787 -e ROOT=TRUE -e USER=admin -e PASSWORD=<yourpassword>")
+  } else {""}
 
   # link course/shiny-server/clicker directly to /srv/shiny-server
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
