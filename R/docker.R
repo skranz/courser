@@ -44,7 +44,8 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ',course.dir,':/srv/course ' ,image)
+  # link course/shiny-server/teacherhub directly to /srv/shiny-server
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 ',rstudio,' -v ',file.path(shiny.dir,field),':/srv/shiny-server/ -v ',course.dir,':/srv/course ' ,image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -53,7 +54,8 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,' -v ', slides.dir,':/srv/slides/ -v ',' -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  # link course/shiny-server/present directly to /srv/shiny-server
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/ -v ', slides.dir,':/srv/slides/ -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 
@@ -63,7 +65,8 @@ docker pull ", image,"
   name = opts[[field]]$container
   port = opts[[field]]$port
 
-  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/',field,'  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
+  # link course/shiny-server/clicker directly to /srv/shiny-server
+  run.com = paste0('docker run -entrypoint="/usr/bin/with-contenv bash" --name ',name,' -d -p ',port,':3838 -v ',file.path(shiny.dir,field),':/srv/shiny-server/  -v ', log.dir,':/var/log/ -v ', clicker.dir,':/srv/clicker/ ',image)
 
   code = c(code,"",paste0("# ", field), paste0("docker stop ", name),paste0("docker rm ", name), run.com)
 

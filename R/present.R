@@ -35,7 +35,7 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
   #stop()
 
   course.dir = opts$course.dir
-  app.base.dir = file.path(course.dir,"course","shiny-server","present")
+  app.base.dir = file.path(course.dir,"course","shiny-server","present","slides")
   app.dir = file.path(app.base.dir, slides)
 
   if (del.old.app.dirs) {
