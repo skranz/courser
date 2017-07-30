@@ -266,12 +266,17 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
   #  slides.dir = file.path()
   #}
 
-  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts)
+  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts, query.key=opts$present.query.key)
 
   # add course to clicker
   #write.clicker.running(courseid = courseid,clicker.dir = clicker.dir)
 
+
   url = paste0(opts$base_url,":", opts$present$port, "/slides/",slides)
+  if (!is.null(opts$present.query.key)) {
+    url = paste0(url,"?key=",opts$present.query.key)
+  }
+
 
   if (isTRUE(opts$local)) {
     stopApp(app.dir)

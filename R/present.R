@@ -17,7 +17,7 @@ get.presenter.ps.file = function(slides.dir) {
 }
 
 # We have a single presenter app for each course
-presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.file=get.presenter.ps.file(slides.dir), teacher="Teacher") {
+presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.file=get.presenter.ps.file(slides.dir), teacher="Teacher", query.key = NULL) {
   restore.point("presenterApp")
 
   if (is.null(ps.file)) {
@@ -27,10 +27,28 @@ presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.
   ps = read.rps(file.path(slides.dir,ps.file))
 
   app = slidesApp(ps = ps,user.name = teacher,dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, use.clicker=TRUE))
+
+  # require correct query key in url
+  if (!is.null(query.key)) {
+    login.fun = app$initHandler
+    login.failed.fun = function(...) {
+      args = list(...)
+      restore.point("failedPresenterAppLogin")
+      cat("\nlogin failed show without events...")
+      #stopApp()
+    }
+    restore.point("presenterAppWithQueryKey")
+    lop = loginModule(login.by.query.key = "require",fixed.query.key = query.key, login.fun = login.fun, login.failed.fun=login.failed.fun )
+    app$initHandler = function(...) {
+      initLoginDispatch(lop)
+    }
+  }
+
+
   app
 }
 
-makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE) {
+makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE, query.key = NULL) {
   restore.point("makePresenterAppDir")
   #stop()
 
@@ -69,6 +87,12 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
 
   # token.dir not yet used
   token.dir = NA
+  if (!is.null(query.key)) {
+    query.key.str = paste0('query.key = "', query.key,'"')
+  } else {
+    query.key.str = paste0('query.key = NULL')
+  }
+
   code = paste0('
 # Automatically generated presentation app
 
@@ -77,8 +101,9 @@ slides.dir = "',slides.dir,'"
 clicker.dir = "',opts$clicker.dir,'"
 token.dir = "',token.dir,'"
 courseid = "',courseid,'"
+',query.key.str,'
 
-app = presenterApp(courseid=courseid, slides.dir=slides.dir, token.dir=token.dir, clicker.dir=clicker.dir)
+app = presenterApp(courseid=courseid, slides.dir=slides.dir, token.dir=token.dir, clicker.dir=clicker.dir, query.key=query.key)
 
 appReadyToRun(app)
 
