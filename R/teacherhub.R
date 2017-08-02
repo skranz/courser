@@ -3,7 +3,7 @@ examples.teacherhub = function() {
   restore.point.options(display.restore.point = TRUE)
 
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = TeacherHubApp(course.dir=course.dir,init.userid="kranz", need.password=FALSE, need.user=TRUE, fixed.password="ompo", use.signup=FALSE)
+  app = TeacherHubApp(course.dir=course.dir,init.userid="kranz", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
   res = viewApp(app, port=app$glob$opts$teacherhub$port,launch.browser = rstudioapi::viewer)
 
   if (dir.exists(res)) {
