@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="kranz", need.password=FALSE, need.user=TRUE, fixed.password="ompo", use.signup=FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="Guest_4", need.password=FALSE, need.user=TRUE, fixed.password="ompo", use.signup=FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
@@ -48,7 +48,7 @@ create.studentdb = function(course.dir, schema.file = NULL) {
 }
 
 CoursePageApp = function(course.dir, courseid = basename(course.dir)
-, login.db.dir=NULL, app.title=paste0(courseid), ...) {
+, login.db.dir=NULL, app.title=paste0(courseid), token.login="allow", ...) {
   restore.point("CoursePageApp")
   app = eventsApp()
 
@@ -68,11 +68,14 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
   }
 
 
+  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir)
+  app$glob$num.studs = length(unique(app$glob$clicker.hs$userid))
+
   app$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
-  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",...)
+  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = token.login, token.dir=file.path(course.dir,"course","tokens"), ...)
 
   restore.point("CoursePageApp.with.lop")
 
@@ -156,15 +159,101 @@ compile.coursepage = function(course.dir, page.file = file.path(course.dir,"cour
   cr
 }
 
-courser_current_tasks = function(...) {
+coursepage_num_students = function(..., app=getApp(), cp=app$cp) {
+  app$glob$num.studs
+}
+
+coursepage_current_tasks = function(...,cp=app$cp, app=getApp()) {
   HTML("Current tasks not yet implemented.")
 }
 
 
-courser_repeat_clicker_quiz = function(...) {
-  HTML("Repetition of clicker quizzes from lecture not yet implemented.")
+
+
+coursepage_clicker_ranking = function(...,width=480, height=280,cp=app$cp, app=getApp()) {
+  args = list(...)
+  restore.point("coursepage_ranglists")
+  cat("\ncoursepage_ranglists")
+
+  hs = app$glob$clicker.hs
+  clicker.svg = user.highscore.svg(hs, userid=cp$userid, lang=cp$lang, width=width, height=height)
+
+  tagList(
+    HTML(clicker.svg)
+  )
 }
 
-courser_ranglists = function(...) {
-  HTML("Rankings not yet implemented.")
+coursepage_start_clicker = function(label="Start Clicker",mode="buttonlink", app=getApp(), cp=app$cp) {
+  restore.point("coursepage_start_clicker_button")
+
+  token = cp$stud$token
+  if (is.empty(token)) {
+    token = redraw.course.student.token(cp=cp)
+  }
+
+  clicker.url = paste0(cp$clicker$url,"?code=",token)
+  HTML(paste0('<a id="startClickerAppLink" href="',clicker.url,'" target="_blank" ', if (mode=="buttonlink") 'class="btn btn-default btn-xs"','>',label,'</a>'))
+
+}
+
+coursepage_redraw_token_button = function(label="New URL Code",msg="A new url code has been drawn: ") {
+  ui = tagList(
+    smallButton(id="redrawTokenBtn", label=label),
+    uiOutput("redrawTokenMsg")
+  )
+  buttonHandler("redrawTokenBtn", function(...) {
+    token = redraw.course.student.token(reset.links=TRUE)
+    timedMessage("redrawTokenMsg",msg = paste0(msg,token),millis = Inf)
+  })
+  ui
+}
+is.empty = function(x, na.is.empty=TRUE) {
+  if (length(x)==0) return(TRUE)
+  if (na.is.empty & all(is.na(x))) return(TRUE)
+  if (is.character(x) & nchar(x)==0) return(TRUE)
+  FALSE
+}
+
+redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentdb, app=getApp(),reset.links=FALSE,...) {
+
+  old.token = cp$stud$token
+  restore.point("redraw.course.student.token")
+
+  if (!is.empty(old.token)) {
+
+    # remove clicker token
+    file = file.path(course.dir,"course","clicker","tokens",old.token)
+    if (file.exists(file))
+      file.remove(file)
+
+    # remove coursepage token
+    file = file.path(course.dir,"course","tokens",old.token)
+    if (file.exists(file))
+      file.remove(file)
+
+
+  }
+
+  # draw a token
+  token = shinyEventsLogin::make.login.token.key(userid=cp$userid,nchar=nchar)
+
+  # save in db
+  dbUpdate(db,table = "students",vals = list(token=token),where = list(userid=cp$userid))
+
+  tok = toJSON(list(key=token, userid=cp$userid))
+
+  # save in clicker token dir
+  writeLines(tok, file.path(course.dir,"course","clicker","tokens",token))
+
+  # save in coursepage token dir
+  writeLines(tok, file.path(course.dir,"course","tokens",token))
+
+
+  if (reset.links) {
+    clicker.url = paste0(cp$clicker$url,"?code=",token)
+    callJS("$('#startClickerAppLink').attr","href",clicker.url)
+  }
+
+  return(token)
+
 }

@@ -1,0 +1,62 @@
+# Interaktives Zusatzmaterial: Einführung und Grundlagen der VWL
+
+Willkommen *{{nick}}*!
+
+Vorlesungsskript und Aufgabenblätter für Übungen und Tutorien werden auf der Moodleseite dieses Kurs bereitgestellt. Hier finden Sie nur das interaktive Zusatzmaterial 
+
+### Aktuelle Aufgaben
+
+{{coursepage_current_tasks()}}
+
+### Entwicklung Ihres Rankings beim Vorlesungsquiz ({{coursepage_num_students()}} Studierende)
+
+{{coursepage_clicker_ranking()}}
+
+#< note 'Hintergrundinfo zum Ranking'
+
+Das Ranking basiert auf den Antworten bei den Quizzen in den Vorlesungen. Die Zahl der Punkte pro richtige Antwort hängt von der Aufgabe ab und von Anpassungsfaktoren, die weiter unten erklärt sind.
+
+Es gibt keine negativen Punktzahlen. Wenn Sie keine Antwort abgegeben haben, erhalten Sie 0 Punkte. Es macht also stets Sinn, an jedem Quiz teilzunehmen.
+
+Können Sie an einer Vorlesung nicht teilnehmen, haben Sie die Möglichkeit **bevor** die Vorlesung stattfindet, Antworten auf den unten verlinkten interaktiven Slides abzugeben. Sie erhalten aber einen 20% Punktebonus, wenn Sie in der Vorlesung am Quiz teilnehmen.
+
+Das Ranking basiert auf den Gesamtpunkten aus allen bisherigen Vorlesungsterminen. Je mehr Punkte Sie relativ zu Ihren Kommilitonen erzielt haben, desto weiter oben sind Sie im Ranking.
+
+Dieses Ranking und die Punkte aus den Quizzen sind **nicht relevant für die Endnote**. Versuchen Sie also die Quizze zu lösen, ohne vorher die Lösung zu lesen, die manchmal auf den nächsten Slides gegeben ist.
+
+Manchen von Ihnen ist das Ranking vielleicht vollkommen egal. Unsere Idee ist, dass das Ranking im Schnitt trotzdem die Motivation zur aktiven Teilnahme an der Vorlesung stärken kann. Mit Blick auf Computer- und Videospielen, scheinen Rankings tatsächlich dazu motivieren zu können, viel Zeit mit Aktivitäten zu verbringen, die einem im Ranking weiter nach vorne bringen.
+
+Die Punkte aus den einzelnen Vorlesungsterminen werden noch durch zwei Faktoren angepasst.
+
+1. 15% Inflation: Wir haben eine positive Inflationsrate bei den Punktzahlen eingebaut. Jeden Vorlesungstermin steigt die Zahl der vergebenen Punkte für eine gleiche Aufgabe um 15%. 
+Unsere Motivation für die Inflation ist wie folgt: Ohne Inflation ist es im Verlauf des Semesters tendenziell immer schwieriger das eigene Ranking zu verändern. Für das Ranking werden ja die Punkte aus allen vorangegangen Vorlesungen zusammengezählt, d.h. die im Zeitverlauf wird die aktuelle Vorlesung einen immer kleineren Anteil an der Gesamtpunktzahl haben. Wenn es aber immer schwieriger wird das eigene Ranking zu beeinflussen, sinkt ggf. der motivierende Effekt des Rankings. Eine Punkteinflation wirkt diesem Effekt entgegen, dadurch dass in späteren Vorlesungen ceteris paribus mehr Punkte vergeben werden. 
+
+#< ignore
+```{r include=FALSE}
+n = 15
+pi = 1/10
+points = (1+pi)^(0:n)
+cum.points = cumsum(points)
+share = points / cum.points
+share
+plot(share)
+```
+#>
+
+2. Korrektur für Zahl der Aufgaben in einer Vorlesung: Die Zahl der interaktiven Quiz-Aufgaben kann stärker zwischen Vorlesungsterminen variieren. Wenn n die Zahl der Aufgaben an einem Vorlesungstermin ist, teilen wir die Punkte an diesem Termin durch die Quadratwurzel von n. Z. B. an einem Termin mit 4 Aufgaben teilen wir die Punkte für jede Aufgabe durch 2, an einem Termin mit 9 Aufgaben, würden wir die Punkte für jede Aufgabe durch 3 teilen. Hierdurch wollen wir etwas dem Effekt entgegenwirken, dass manche Vorlesungstermine das Ranking sehr viel stärker beeinflussen können, als andere.
+
+#>
+
+### Weitere Funktionen
+
+{{coursepage_start_clicker(label="Starte Klicker Anwendung")}}
+
+
+Sie können auf die Klicker Webseite und Slides direkt mit einem Code in der Webadresse mit Ihren Nutzernamen zugreifen. Sollten Sie Befürchten, dass jemand anderes diesen Code kennt und sich unter Ihren Namen anmeldet, können Sie durch Druck auf folgenden Knopf einen neuen Code erstellen.
+
+{{coursepage_redraw_token_button(label="Neuer Code")}}
+
+
+## Wiederhole Quizze aus der Vorlesung
+
+{{courser_repeat_clicker_quiz()}}

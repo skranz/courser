@@ -6,7 +6,19 @@ students:
     email: VARCHAR(255)
     nick: VARCHAR(255)
     gender: CHARACTER(1)
+    subject: VARCHAR(100)
     allowData: BOOLEAN
     allowGrade: BOOLEAN
+    token: TEXT
   indexes:
     - "CREATE UNIQUE INDEX students1 on students (userid)"
+
+
+studgroups:
+  descr: student groups for more interesting rankings
+  table:
+    groupid: VARCHAR(255)
+    userid: VARCHAR(255)
+  indexes:
+    - "CREATE INDEX studgroups1 on studgroups (groupid)"
+    - "CREATE INDEX studgroups2 on studgroups (userid)"
