@@ -8,12 +8,13 @@ examples.coursepage = function() {
 
 }
 
-student.schema = function(app=getApp()) {
-  if (!is.null(app$glob[["studschema"]]))
-    return(app$glob[["studschema"]])
+student.schemas = function(app=getApp()) {
+  restore.point("student.schema")
+  if (!is.null(app$glob[["studschemas"]]))
+    return(app$glob[["studschemas"]])
 
   schema.file = system.file("schema/studentdb.yaml", package="courser")
-  app$glob[["studschema"]] = rmdtools::read.yaml(schema.file)
+  app$glob[["studschemas"]] = load.and.init.schemas(schema.file)
 
 }
 
@@ -94,7 +95,7 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
 
 
   db = get.studentdb()
-  cp$stud = dbGet(db,"students",params = nlist(userid))
+  cp$stud = dbGet(db,"students",params = nlist(userid), schemas = student.schemas())
   # student does not yet exist
   # show modal settings window
   if (NROW(cp$stud) == 0) {
@@ -103,18 +104,17 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
     add.form.handlers(form=cp$settings.form,btn.id="settingsModalBtn",function(values,...)  {
       args = list(...)
       restore.point("settingsModalBtn")
-      res = dbGet(db, "students", params=values["nick"])
+      res = dbGet(db, "students", params=values["nick"], schemas = student.schemas())
       if (NROW(res)>0) {
         show.form.alert(form=form, msg=paste0("There is already a user with alias ", values$nick, ". Please pick another alias"))
       }
-      schema = student.schema()
       values$email = values$userid
-      values = values[names(schema$students$table)]
+      stud = student.default.aux.values(stud = values)
 
-      dbInsert(db, "students", values, schema=schema)
+      dbInsert(db, "students", stud, schemas=student.schemas())
       cp$stud = values
       removeModal()
-      coursepage.login()
+      show.coursepage()
     })
 
     title = replace.whiskers(app$glob$strings$setting_title, list(cp$courseid))
@@ -126,29 +126,61 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
     return()
   }
   cp$stud = as.list(cp$stud)
+  show.coursepage()
+}
 
+show.coursepage = function(app=getApp(), cp=app$cp) {
+  restore.point("show.coursepage")
 
   cp$cp.ui = rmdtools::render.compiled.rmd(cp$cr, envir=cp$stud,out.type = "shiny")
-  cp$settings.ui = student.settings.ui(cp=cp,values = cp$stud)
+  cp$settings.ui = student.settings.ui(cp=cp,values = cp$stud,submit.handler = coursepage.submit.settings)
+  cp$aux.settings.ui = student.aux.settings.ui(cp=cp,values = cp$stud,submit.handler = coursepage.submit.settings)
 
   ui = tabsetPanel(
     tabPanel(cp$courseid,cp$cp.ui),
-    tabPanel(app$glob$strings$setting_tab,cp$settings.ui)
+    tabPanel(app$glob$strings$setting_tab,cp$settings.ui),
+    tabPanel(app$glob$strings$aux_setting_tab,cp$aux.settings.ui)
   )
 
   setUI("mainUI",ui)
   dsetUI("mainUI",ui)
 
 
-
 }
 
-student.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), submitBtn=NULL) {
+coursepage.submit.settings = function(values, app=getApp(),cp=app$cp,... ) {
+  restore.point("coursepage.submit.settings")
+  db = get.studentdb()
+
+  stud = cp$stud
+  stud[names(values)] = values
+  res = dbInsert(db, "students", stud, schemas=student.schemas(),mode = "replace")
+  cp$stud = res$values
+  show.coursepage()
+}
+
+# need to put to external file at some point
+student.default.aux.values = function(stud) {
+  stud$defaultShowRanking = stud$showRanking = stud$emailRanking = sample(c(FALSE,TRUE),1)
+  stud
+}
+
+
+student.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), submitBtn=NULL, submit.handler=NULL) {
   restore.point("student.settings.ui")
   lang = first.non.null(cp[["lang"]],"en")
   file = system.file(paste0("forms/",lang,"/student_settings.yaml"), package = "courser")
   cp$settings.form = yaml.form(file=file, lang=lang, prefix="stud_settings")
-  ui = form.ui.simple(cp$settings.form, submitBtn=submitBtn,values = values)
+  ui = form.ui.simple(cp$settings.form, submitBtn=submitBtn,values = values,submit.handler = submit.handler)
+  ui
+}
+
+student.aux.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), submitBtn=NULL, submit.handler=NULL) {
+  restore.point("student.aux.settings.ui")
+  lang = first.non.null(cp[["lang"]],"en")
+  file = system.file(paste0("forms/",lang,"/student_aux_settings.yaml"), package = "courser")
+  cp$settings.form = yaml.form(file=file, lang=lang, prefix="stud_aux_settings")
+  ui = form.ui.simple(cp$settings.form, submitBtn=submitBtn,values = values,submit.handler = submit.handler)
   ui
 }
 

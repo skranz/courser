@@ -1,3 +1,5 @@
 setting_title: Persönliche Einstellungen für Kurs "{{courseid}}"
 setting_btn: Speichern und weiter
 setting_tab: Einstellungen
+aux_setting_title: Weitere Einstellungen für Kurs "{{courseid}}"
+aux_setting_tab: Weitere Einstellungen

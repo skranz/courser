@@ -1,0 +1,12 @@
+fields:
+  showRanking:
+    tab: Extra
+    label: |
+      Zeige Rankings
+    choices: {'Ja': TRUE, 'Nein': FALSE}
+  emailRanking:
+    tab: Extra
+    label: |
+      Sende Email mit Ranking nach jeder Vorlesung?
+    choices: {'Ja': TRUE, 'Nein': FALSE}
+

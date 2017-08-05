@@ -1,3 +1,4 @@
+# dbCreateSQLiteFromSchema("studentdb.yaml",schema.dir = "D:/libraries/courser/courser/inst/schema", db.name="students.sqlite", db.dir="D:/libraries/courser/courses/vwl/course/db")
 # Tables for simple user management
 students:
   descr: students table
@@ -10,8 +11,29 @@ students:
     allowData: BOOLEAN
     allowGrade: BOOLEAN
     token: TEXT
+    showRanking: BOOLEAN
+    emailRanking: BOOLEAN
+    defaultShowRanking: BOOLEAN
   indexes:
     - "CREATE UNIQUE INDEX students1 on students (userid)"
+
+students_hist:
+  descr: students table
+  table:
+    mtime: DATETIME
+    userid: VARCHAR(255)
+    email: VARCHAR(255)
+    nick: VARCHAR(255)
+    gender: CHARACTER(1)
+    subject: VARCHAR(100)
+    allowData: BOOLEAN
+    allowGrade: BOOLEAN
+    token: TEXT
+    showRanking: BOOLEAN
+    emailRanking: BOOLEAN
+    defaultShowRanking: BOOLEAN
+  indexes:
+    - "CREATE INDEX students_hist1 on students_hist (userid,mtime)"
 
 
 studgroups:
