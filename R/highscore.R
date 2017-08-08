@@ -42,7 +42,7 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   library(tidyr)
   sdf = tidyr::expand(sdf, nesting(session.num,session.date), userid  ) %>%
     left_join(sdf, by=c("session.num", "session.date", "userid")) %>%
-    replace_na(list(points=0)) %>%
+    replace_na(list(points=0, adj.points=0)) %>%
     arrange(session.num, userid) %>%
     group_by(userid) %>%
     mutate(cum.points=cumsum(points), cum.adj.points=cumsum(adj.points)) %>%

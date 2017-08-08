@@ -10,6 +10,8 @@ examples.coursepage = function() {
 
 student.schemas = function(app=getApp()) {
   restore.point("student.schema")
+
+
   if (!is.null(app$glob[["studschemas"]]))
     return(app$glob[["studschemas"]])
 

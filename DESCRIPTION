@@ -10,4 +10,5 @@ LazyData: TRUE
 Depends:
   restorepoint, shinyEvents, stringtools, rmdtools, yaml,
   shinyEventsUI, shinyEventsLogin,
-  RTutor2, armd, courserClicker, webforms, dbmisc, bbsvg
+  RTutor2, armd, courserClicker, webforms, dbmisc, bbsvg,
+  sendmailR

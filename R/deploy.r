@@ -1,7 +1,7 @@
 # Functions for deploying a course
 
 course.settings = function(course.dir) {
-  file = file.path(course.dir,"settings","settings.yaml")
+  file = file.path(course.dir,"course", "settings", "settings.yaml")
   settings = read.yaml(file = file)
   settings
 }

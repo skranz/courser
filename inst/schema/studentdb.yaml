@@ -4,6 +4,7 @@ students:
   descr: students table
   table:
     userid: VARCHAR(255)
+    hasRegistered: BOOLEAN
     email: VARCHAR(255)
     nick: VARCHAR(255)
     gender: CHARACTER(1)
@@ -44,3 +45,12 @@ studgroups:
   indexes:
     - "CREATE INDEX studgroups1 on studgroups (groupid)"
     - "CREATE INDEX studgroups2 on studgroups (userid)"
+
+jobs:
+  descr: History of runned courser jobs, like updating highscore and sending it
+  table:
+    time: DATETIME
+    jobtype: VARCHAR(255)
+  indexes:
+    - "CREATE INDEX jobs1 on jobs (jobtype,time)"
+    - "CREATE INDEX jobs2 on jobs (time)"
