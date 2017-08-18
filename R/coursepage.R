@@ -69,6 +69,12 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
     app$glob$strings = read.yaml(string.file)
 
   }
+  if (is.null(app$glob$redraw.token.cr)) {
+    file = system.file(file.path("forms",cp$lang,"redraw_token.Rmd"), package="courser")
+    app$glob$redraw.token.cr = rmdtools::compile.rmd(file = file,out.type = "shiny")
+
+  }
+
 
 
   app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir)
@@ -76,6 +82,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
 
   app$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
+
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
   lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = token.login, token.dir=file.path(course.dir,"course","tokens"), ...)
@@ -95,15 +102,41 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
   cp = app$cp
   cp$userid = cp$email = userid
 
+  db = cp$db = get.studentdb()
 
-  db = get.studentdb()
   cp$stud = dbGet(db,"students",params = nlist(userid), schemas = student.schemas())
+
+  # save login in database
+  dbInsert(db,"login_hist", vals=nlist(login_time=Sys.time(), userid=userid, showRanking=isTRUE(cp$stud$showRanking)),  schemas = student.schemas())
+
+
   # student does not yet exist
   # show modal settings window
+  if (NROW(cp$stud) == 0 || isTRUE(!cp$stud$hasRegistered)) {
+    coursepage.new.student.modals(cp=cp, app=app)
+    return()
+  }
+
+  cp$stud = as.list(cp$stud)
+  show.coursepage()
+}
+
+coursepage.new.student.modals = function(cp, app=getApp()) {
+  restore.point("coursepage.new.student.modals")
+
+
   if (NROW(cp$stud) == 0) {
-    label = app$glob$strings$setting_btn
-    settings.ui = student.settings.ui(cp=cp, submitBtn = actionButton("settingsModalBtn",label))
-    add.form.handlers(form=cp$settings.form,btn.id="settingsModalBtn",function(values,...)  {
+    stud = list(userid=cp$userid,email=cp$email)
+  } else {
+    stud = as.list(cp$stud[1,])
+  }
+  label = app$glob$strings$setting_btn
+
+
+  settings.ui = student.settings.ui(cp=cp, submitBtn = actionButton("settingsModalBtn",label),values = stud)
+
+
+  add.form.handlers(form=cp$settings.form,btn.id="settingsModalBtn",function(values,...)  {
       args = list(...)
       restore.point("settingsModalBtn")
       res = dbGet(db, "students", params=values["nick"], schemas = student.schemas())
@@ -111,24 +144,41 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
         show.form.alert(form=form, msg=paste0("There is already a user with alias ", values$nick, ". Please pick another alias"))
       }
       values$email = values$userid
-      stud = student.default.aux.values(stud = values)
 
-      dbInsert(db, "students", stud, schemas=student.schemas())
-      cp$stud = values
+      stud[names(values)] = values
+      stud = student.default.aux.values(stud = stud)
+
+      res = dbInsert(db, "students", stud, schemas=student.schemas())
+      cp$stud = res$values
+      dbInsert(db, "students_hist", c(list(mtime=Sys.time()),cp$stud), schemas=student.schemas())
+
       removeModal()
       show.coursepage()
     })
+    title = replace.whiskers(app$glob$strings$setting_title, list(courseid=cp$courseid, course.title=cp$course.title))
 
-    title = replace.whiskers(app$glob$strings$setting_title, list(cp$courseid))
+    # show first terms modal
+    if (!isTRUE(stud$agreedTerms)) {
+      ok.handler = function(...) {
+        restore.point("termsOkHandler")
+        stud$agreedTerms = TRUE
+        showModal(modalDialog(
+          settings.ui,
+          title = title,
+          easyClose = FALSE,footer = NULL
+        ))
+      }
+      courser.show.terms.modal(course.dir=cp$course.dir, lang=cp$lang,ok.handler = ok.handler)
+      return()
+    }
+
     showModal(modalDialog(
       settings.ui,
       title = title,
       easyClose = FALSE,footer = NULL
     ))
     return()
-  }
-  cp$stud = as.list(cp$stud)
-  show.coursepage()
+
 }
 
 show.coursepage = function(app=getApp(), cp=app$cp) {
@@ -157,6 +207,8 @@ coursepage.submit.settings = function(values, app=getApp(),cp=app$cp,... ) {
   stud = cp$stud
   stud[names(values)] = values
   res = dbInsert(db, "students", stud, schemas=student.schemas(),mode = "replace")
+  dbInsert(db, "students_hist", c(list(mtime=Sys.time()),stud), schemas=student.schemas())
+
   cp$stud = res$values
   show.coursepage()
 }
@@ -183,7 +235,11 @@ student.aux.settings.ui = function(cp=app$cp, values = list(userid=cp$userid), s
   file = system.file(paste0("forms/",lang,"/student_aux_settings.yaml"), package = "courser")
   cp$settings.form = yaml.form(file=file, lang=lang, prefix="stud_aux_settings")
   ui = form.ui.simple(cp$settings.form, submitBtn=submitBtn,values = values,submit.handler = submit.handler)
-  ui
+  token.ui = render.compiled.rmd(app$glob$redraw.token.cr, envir=list(token=cp$stud$token))
+  tagList(
+    ui,
+    token.ui
+  )
 }
 
 

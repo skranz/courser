@@ -1,0 +1,17 @@
+#. terms
+Nutzungsbedingungen
+===================
+
+Diese webbasierte Software erlaubt es während der Vorlesung per Smartphone an interaktive Quizzen teilzunehmen und webbasierte Zusatzaufgaben zu Hause zu lösen. Dieses zusätzliche Angebot ist nicht notenrelevant und die Teilnahme ist freiwillig.
+
+Um unter anderem Highscores und Rankings zu erstellen, werden Ihre Nutzungsdaten gespeichert. Dabei werden Ihr Name oder Emailadresse keinen anderen Studierenden zugänglich gemacht. Sie können jedoch einen anonymen "Spitznamen" wählen, der ggf. anderen Studierenden angezeigt werden kann.
+
+Nur in anonymisierter Form können die Daten auch zu Forschungszwecken genutzt und geteilt werden. (Dabei werden weder ihr echter Name, Emailadresse noch Spitzname weitergegeben). Zweck der Forschung ist es herauszufinden, ob und wie die verschiedenen Zusatzangebote, z. B. die Quizze in der Vorlesung, die Lehre verbessern können. Es werden keine nicht-anonymisierten Daten weitergegeben.
+
+Es gibt verschiedene Einstellungen auf der Kursseite. Hier können Sie z. B. festlegen, ob Ihnen ein Ranking angezeigt wird und per Email nach jeder Vorlesung zugesendet wird. Die Defaulteinstellungen können sich zwischen den verschiedenen Studierenden zufällig unterscheiden. Das Randomisieren der Defaulteinstellungen dient Forschungszwecken, um kausale Effekte identifizieren zu können.
+#. checkBoxLabel
+Ich habe die Nutzungsbedingungen gelesen und stimme zu.
+#. btnLabel
+Weiter
+#. noCheckMsg
+Sie müssen den Nutzungsbedingungen zustimmen, um diese webbasierte Software nutzen zu können.

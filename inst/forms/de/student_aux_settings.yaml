@@ -9,4 +9,3 @@ fields:
     label: |
       Sende Email mit Ranking nach jeder Vorlesung?
     choices: {'Ja': TRUE, 'Nein': FALSE}
-

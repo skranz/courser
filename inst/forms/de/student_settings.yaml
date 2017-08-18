@@ -11,18 +11,18 @@ fields:
   gender:
     label: 'Geschlecht'
     choices: {'Männlich': m, 'Weiblich': f}
-  allowData:
-    label: 'Anonymisierte Daten dürfen für Forschungszwecke genutzt und weitergegeben werden'
-    choices: {'Erlauben': TRUE, 'Verbieten': FALSE}
-    help: |
-      Wir würden gerne anonymierte Daten für Forschungszwecke nutzen
-      und würden uns sehr freuen, wenn Sie uns die anonymisierte Nutzung
-      Ihrer Daten erlauben. Ein wichtiges Ziel ist es, die Qualität der Lehre zu verbessern.
-
-      Um anderen Forschern die Möglichkeit zu geben, Ergebnisse zu replizieren,
-      ist es sehr hilfreich die Daten einer Analyse weitergeben zu können.
-      Ihre Namen und Emailadressen werden aber selbstverständlich vorher gelöscht,
-      auch werden keine Chatmitteilungen analysiert oder weitergegeben.
+#  allowData:
+#    label: 'Anonymisierte Daten dürfen für Forschungszwecke genutzt und weitergegeben werden'
+#    choices: {'Erlauben': TRUE, 'Verbieten': FALSE}
+#    help: |
+#      Wir würden gerne anonymierte Daten für Forschungszwecke nutzen
+#      und würden uns sehr freuen, wenn Sie uns die anonymisierte Nutzung
+#      Ihrer Daten erlauben. Ein wichtiges Ziel ist es, die Qualität der Lehre zu verbessern.
+#
+#      Um anderen Forschern die Möglichkeit zu geben, Ergebnisse zu replizieren,
+#      ist es sehr hilfreich die Daten einer Analyse weitergeben zu können.
+#      Ihre Namen und Emailadressen werden aber selbstverständlich vorher gelöscht,
+#      auch werden keine Chatmitteilungen analysiert oder weitergegeben.
   allowGrade:
     label: 'Anonymisierte Daten dürfen mit Klausurnote verknüpft werden'
     choices: {'Erlauben': TRUE, 'Verbieten': FALSE}

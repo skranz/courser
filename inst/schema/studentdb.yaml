@@ -1,10 +1,12 @@
 # dbCreateSQLiteFromSchema("studentdb.yaml",schema.dir = "D:/libraries/courser/courser/inst/schema", db.name="students.sqlite", db.dir="D:/libraries/courser/courses/vwl/course/db")
+
 # Tables for simple user management
 students:
   descr: students table
   table:
     userid: VARCHAR(255)
     hasRegistered: BOOLEAN
+    agreedTerms: BOOLEAN
     email: VARCHAR(255)
     nick: VARCHAR(255)
     gender: CHARACTER(1)
@@ -46,11 +48,8 @@ studgroups:
     - "CREATE INDEX studgroups1 on studgroups (groupid)"
     - "CREATE INDEX studgroups2 on studgroups (userid)"
 
-jobs:
-  descr: History of runned courser jobs, like updating highscore and sending it
+login_hist:
   table:
-    time: DATETIME
-    jobtype: VARCHAR(255)
-  indexes:
-    - "CREATE INDEX jobs1 on jobs (jobtype,time)"
-    - "CREATE INDEX jobs2 on jobs (time)"
+    login_time: DATETIME
+    userid: VARCHAR(255)
+    showRanking: BOOLEAN
