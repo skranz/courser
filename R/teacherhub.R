@@ -84,6 +84,14 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings
   }
   opts$clicker$url = paste0(opts$base_url,":",opts$clicker$port,"/clicker")
 
+  # peerquiz
+  pq.dir = file.path(course.dir,"course","peerquiz")
+  opts$has.pq = dir.exists(pq.dir)
+  if (opts$has.pq) {
+    opts$pq.dir = pq.dir
+    set.pq.opts(init.pq.opts(pq.dir=pq.dir))
+  }
+
   opts
 }
 

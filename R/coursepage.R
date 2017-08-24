@@ -55,14 +55,19 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
   restore.point("CoursePageApp")
   app = eventsApp()
 
-  app$ui = fluidPage(
-    uiOutput("mainUI")
-  )
 
   opts = init.th.opts(course.dir = course.dir)
   opts$courseid = courseid
 
   cp = as.environment(opts)
+
+  if (opts$has.pq) {
+    cp$apq = init.apq(pq.dir=cp$pq.dir)
+  }
+  app$ui = fluidPage(
+    if (opts$has.pq) pq.guess.headers(),
+    uiOutput("mainUI")
+  )
 
   if (is.null(app$glob$strings)) {
     string.file = system.file(file.path("forms",cp$lang,"strings.yaml"), package="courser")
@@ -124,7 +129,7 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
 coursepage.new.student.modals = function(cp, app=getApp()) {
   restore.point("coursepage.new.student.modals")
 
-
+  db = cp$db
   if (NROW(cp$stud) == 0) {
     stud = list(userid=cp$userid,email=cp$email)
   } else {
@@ -254,7 +259,21 @@ coursepage_num_students = function(..., app=getApp(), cp=app$cp) {
 }
 
 coursepage_current_tasks = function(...,cp=app$cp, app=getApp()) {
-  HTML("Current tasks not yet implemented.")
+  if (isTRUE(cp$has.pq)) {
+    ui = active.pqs.ui(cp$apq, userid=cp$userid)
+  } else {
+    ui = HTML("---")
+  }
+  ui
+}
+
+coursepage_closed_pq = function(...,cp=app$cp, app=getApp()) {
+  if (isTRUE(cp$has.pq)) {
+    ui = closed.pqs.ui(apq = cp$apq, userid=cp$userid)
+  } else {
+    ui = HTML("---")
+  }
+  ui
 }
 
 
