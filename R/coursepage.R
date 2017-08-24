@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="Guest_4", need.password=FALSE, need.user=TRUE, fixed.password="ompo", use.signup=FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="Guest_4", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
@@ -259,6 +259,7 @@ coursepage_num_students = function(..., app=getApp(), cp=app$cp) {
 }
 
 coursepage_current_tasks = function(...,cp=app$cp, app=getApp()) {
+  restore.point("coursepage_current_tasks")
   if (isTRUE(cp$has.pq)) {
     ui = active.pqs.ui(cp$apq, userid=cp$userid)
   } else {

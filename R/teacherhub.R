@@ -172,8 +172,9 @@ show.teacher.hub.ui = function(th=app$th,app=getApp()) {
   ))
 
 
-
   setUI("centerUI",HTML(""))
+  center.ui = th.center.ui(th)
+  setUI("centerUI",center.ui)
   #setUI("southUI",uiOutput("thAlerts"))
 
   show.jquery.pane("mainPanes",c("west","north","south"))
@@ -183,6 +184,19 @@ show.teacher.hub.ui = function(th=app$th,app=getApp()) {
   classEventHandler("thEditFileBtn", event = "click",stop.propagation = TRUE, fun=th.edit.file.click)
   #setUI("westUI",tree)
   #setUI("centerUI",HTML(""))
+}
+
+th.center.ui = function(th,opts=app$glob$opts, app=getApp()) {
+  restore.point("th.center.ui")
+
+  tt.ui = if (opts$has.pq) tagList(
+    h3("Peerquiz Timetable"),
+    pq.timetable.ui(pq.dir=opts$pq.dir)
+  )
+  tabsetPanel(
+    tabPanel("Teacherhub", tt.ui)
+  )
+
 }
 
 # change filetree nodes
