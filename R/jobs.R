@@ -35,6 +35,12 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
 
   students$url.coursepage = paste0(settings$base_url,":",settings$coursepage$port,"/coursepage?code=", students$token)
 
+  pq.dir = file.path(course.dir,"course","peerquiz")
+  has.pq = dir.exists(pq.dir)
+  if (has.pq) {
+    set.pq.opts(init.pq.opts(pq.dir=pq.dir))
+  }
+
   jo = list(
     course.dir = course.dir,
     settings = settings,
@@ -45,7 +51,9 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
     send.email = rep(FALSE, NROW(students)),
     em.li = list(),
     em.cr.li = em.cr.li,
-    time = Sys.time()
+    time = Sys.time(),
+    has.pq = has.pq,
+    pq.dir = pq.dir
   )
   jo$course.title = first.non.null(jo$settings$course.title,basename(course.dir))
 
@@ -61,10 +69,21 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
 
 # search for automatic jobs like updating the highscore
 # and sending emails
-cojo_find = function(jo) {
+cojo_find = function(jo,...) {
   restore.point("cojo_find")
   course.dir = jo$course.dir
-  jobs = NULL
+  jo$jobs = NULL
+  jo %>%
+    cojo_find_clicker() %>%
+    cojo_find_peerquiz(...)
+}
+
+# search for automatic jobs like updating the highscore
+# and sending emails
+cojo_find_clicker = function(jo) {
+  restore.point("cojo_find_clicker")
+  course.dir = jo$course.dir
+  jobs = jo$jobs
 
   # check if there was run new clicker task tag
   # since the highscore was last send
@@ -89,6 +108,42 @@ cojo_find = function(jo) {
   jo$jobs = jobs
   jo
 }
+
+
+# search for automatic jobs like updating the highscore
+# and sending emails
+cojo_find_peerquiz = function(jo) {
+  restore.point("cojo_find_peerquiz")
+  course.dir = jo$course.dir
+  jobs = jo$jobs
+
+  # check if there was run new clicker task tag
+  # since the highscore was last send
+  last.email.file = file.path(course.dir,"course","peerquiz","LAST_EMAIL.json")
+
+  has.task = file.exists(last.task.file)
+  if (has.task) {
+    last.email.file = file.path(course.dir,"course","clicker","LAST_EMAIL.txt")
+    if (!file.exists(last.email.file)) {
+      jo$last.email.clicker.session.num = 0
+      jobs = c(jobs,"hs_clicker")
+
+    } else {
+      task.time = file.mtime(last.task.file)
+      email.time = file.mtime(last.email.file)
+      if ((task.time > email.time)) {
+        jo$last.email.clicker.session.num = as.integer(readLines(last.email.file))
+        jobs = c(jobs,"hs_clicker")
+      }
+    }
+  }
+  jo$jobs = jobs
+  jo
+}
+
+
+
+
 
 cojo_perform = function(jo) {
   restore.point("perform.courser.jobs")
