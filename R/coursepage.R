@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="Guest_4", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="random_1", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
@@ -83,6 +83,10 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
 
 
   app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir)
+  if (opts$has.pq) {
+    app$glob$peerquiz.hs = compute.course.peerquiz.highscore(course.dir = course.dir)
+  }
+
   app$glob$num.studs = length(unique(app$glob$clicker.hs$userid))
 
   app$cp = cp
@@ -286,12 +290,34 @@ coursepage_clicker_ranking = function(...,width=480, height=280,cp=app$cp, app=g
   cat("\ncoursepage_ranglists")
 
   hs = app$glob$clicker.hs
+  # user has not yet particpated
+  if (length(which(hs$userid==cp$userid))==0)
+    return(p("---"))
+
   clicker.svg = user.highscore.svg(hs, userid=cp$userid, lang=cp$lang, width=width, height=height)
 
   tagList(
     HTML(clicker.svg)
   )
 }
+
+
+coursepage_peerquiz_ranking = function(...,width=480, height=280,session.label="", cp=app$cp, app=getApp()) {
+  args = list(...)
+  restore.point("coursepage_peerquiz_ranking")
+
+  hs = app$glob$peerquiz.hs
+  # user has not yet particpated
+  if (length(which(hs$userid==cp$userid))==0)
+    return(p("---"))
+
+  clicker.svg = user.highscore.svg(hs, userid=cp$userid, lang=cp$lang, width=width, height=height,session.label = session.label)
+
+  tagList(
+    HTML(clicker.svg)
+  )
+}
+
 
 coursepage_start_clicker = function(label="Start Clicker",mode="buttonlink", app=getApp(), cp=app$cp) {
   restore.point("coursepage_start_clicker_button")

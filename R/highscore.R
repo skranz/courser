@@ -1,8 +1,17 @@
 examples.update.courser.highscore = function() {
   course.dir = "D:/libraries/courser/courses/vwl"
+  dat = compute.course.peerquiz.highscore(course.dir)
   dat = compute.course.clicker.highscore(course.dir)
 
-  svg = user.highscore.svg(dat,lang="de")
+  svg = user.highscore.svg(dat,userid = "random_1",lang="de", session.label="Aufgabe")
+
+  app = eventsApp()
+  app$ui = tagList(
+    h3("Ranking Peerquiz"),
+    HTML(svg)
+  )
+  viewApp(app)
+
 }
 
 compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5) {
@@ -23,7 +32,7 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
 
   # Just for testing reasons to generate some different
   # session numbers
-  df$session.num = match(df$task.id, unique(df$task.id))
+  #df$session.num = match(df$task.id, unique(df$task.id))
 
   # compute scores for each session
   sdf = df %>%
@@ -64,6 +73,61 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   sdf
 }
 
+
+compute.course.peerquiz.highscore = function(course.dir, inflation.rate = 0, pq.dir = file.path(course.dir,"course", "peerquiz"), tt = first.non.null(pqa[["tt"]],pq.load.time.table(pq.dir = pq.dir,convert.date.times = TRUE)), pq.li = pqa$pq.li,pqa=NULL, ...) {
+  restore.point("compute.course.peerquiz.highscore")
+
+  # find finished pq
+  rows = tt$active & is.true(tt$end_guess <= Sys.time())
+  ids = tt$id[rows]
+
+
+  # compute points for every finished pq
+  p.li = lapply(ids, pq.compute.points, pq.dir=pq.dir)
+  df = bind_rows(p.li)
+
+  # create session date time
+  df = left_join(df, transmute(tt[rows,],id=id, session.date=end_guess),by="id")
+  df$sort.id = paste0(as.integer(df$session.date),"__",df$id)
+  sort.ids = sort(unique(df$sort.id))
+
+  # increasing session numbers
+  df$session.num = match(df$sort.id, sort.ids)
+
+  # compute scores for each session
+  sdf = df %>%
+    mutate(adj.points = points*(1+inflation.rate)^(session.num-1))
+
+
+
+  # filling missing observations with 0
+  library(tidyr)
+  sdf = tidyr::expand(sdf, nesting(session.num,session.date), userid  ) %>%
+    left_join(sdf, by=c("session.num", "session.date", "userid")) %>%
+    replace_na(list(points=0, adj.points=0)) %>%
+    arrange(session.num, userid) %>%
+    group_by(userid) %>%
+    mutate(cum.points=cumsum(points), cum.adj.points=cumsum(adj.points)) %>%
+    ungroup()
+
+  # create ranks
+  sdf = sdf %>%
+    group_by(session.num) %>%
+    mutate(
+      rank = rank(-cum.adj.points, ties.method="average"),
+      session.rank = rank(-points, ties.method="average")
+      ) %>%
+    ungroup() %>%
+    arrange(session.num, rank) %>%
+    group_by(userid) %>%
+    mutate(rank.change = rank - lag(rank)) %>%
+    ungroup()
+
+  sdf
+}
+
+
+
 user.highscore.svg = function(dat, userid=NULL, return.bb = FALSE, width=480, height=320, session.label= if (lang=="de") "Vorlesung" else "Session",xlab=session.label, ylab="", lang="en", tooltip.fun=NULL) {
   restore.point("user.highscore.svg")
 
@@ -72,10 +136,10 @@ user.highscore.svg = function(dat, userid=NULL, return.bb = FALSE, width=480, he
   dat = dat[dat$userid == userid,]
 
   # random data
-  nse = 10
-  x = 1:nse
-  gain = sample(-20:20, nse, replace=TRUE)
-  dat=data_frame(session.num=x, rank=50+gain, session.rank=gain, adj.points=6, cum.adj.points=20)
+  #nse = 10
+  #x = 1:nse
+  #gain = sample(-20:20, nse, replace=TRUE)
+  #dat=data_frame(session.num=x, rank=50+gain, session.rank=gain, adj.points=6, cum.adj.points=20)
 
 
 
