@@ -1,0 +1,26 @@
+#. title
+Willkommen zur Vorlesung {{course.title}}
+#. header
+Hallo,
+
+Sie erhalten diese Email, weil Sie sich auf Moodle zum Kurs {{course.title}} registriert haben. Wir erproben in der Vorlesung Quizze, an denen Sie mit einem internetfähigen Mobiltelefon teilnehmen können. Bitte loggen Sie sich hierfür am Anfang jeder Vorlesung in das Uni WLAN ein und gehen zu folgender Webseite:
+
+{{clicker.url}}
+
+Am Besten schauen Sie jetzt schonmal auf dieser Seite mit Ihrem Mobiltelefon und speichern einen Link der Adresse direkt als Symbol auf Ihren Handy. Hier sind Anleitungen hierfür:
+
+Android:
+
+http://praxistipps.chip.de/android-lesezeichen-auf-dem-homescreen-ablegen-so-klappts_27640
+
+iPhone:
+
+http://praxistipps.chip.de/iphone-bookmarks-als-icon-auf-dem-homescreen-ablegen_27724
+
+Dies ist vielleicht auch eine gute Gelegenheit auf Ihren Mobiltelefon Eduroam zu installieren, welches Ihnen erlaubt sich gratis an so gut wie allen deutschen Universitäten ins W-LAN einzuloggen. In Ulm erspaart Ihnen dies das einloggen über das welcome-Netz. Hier ist die Installation erklärt:
+
+https://www.uni-ulm.de/einrichtungen/kiz/service-katalog/netzwerk-konnektivitaet/wlan/eduroam/
+
+
+---
+Diese Email wurde automatisch erstellt, bitte antworten Sie nicht.

@@ -3,8 +3,12 @@ examples.finde.courser.jobs = function() {
   course.dir = "D:/libraries/courser/courses/vwl"
 
   jo = cojo_init(course.dir=course.dir) %>%
-    cojo_find() %>%
-    cojo_perform() %>%
+    cojo_find()
+
+  jo = jo %>%
+    cojo_perform(jobs="peerquiz")
+
+  jo = jo%>%
     cojo_send_emails()
 
   jo$em.li
@@ -46,7 +50,6 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
     settings = settings,
     db = db,
     schemas=schemas,
-    old.jobs = dbGet(db,"jobs",schemas = schemas),
     students = students,
     send.email = rep(FALSE, NROW(students)),
     em.li = list(),
@@ -75,7 +78,7 @@ cojo_find = function(jo,...) {
   jo$jobs = NULL
   jo %>%
     cojo_find_clicker() %>%
-    cojo_find_peerquiz(...)
+    cojo_find_peerquiz()
 }
 
 # search for automatic jobs like updating the highscore
@@ -112,60 +115,112 @@ cojo_find_clicker = function(jo) {
 
 # search for automatic jobs like updating the highscore
 # and sending emails
-cojo_find_peerquiz = function(jo) {
+cojo_find_peerquiz = function(jo, tt=NULL) {
   restore.point("cojo_find_peerquiz")
-  course.dir = jo$course.dir
-  jobs = jo$jobs
+
+  if (isTRUE(jo$has.pq)) {
+    jo$jobs = c(jo$jobs, "peerquiz")
+  }
+
+  jo
+}
+
+
+
+
+
+cojo_perform = function(jo, jobs=jo$jobs) {
+  restore.point("cojo_perform")
+  jo$jobs = jobs
+  if ("hs_clicker" %in% jobs) {
+    jo = cojo_perform_clicker(jo)
+  }
+  if ("peerquiz" %in% jobs) {
+    jo = cojo_perform_peerquiz(jo)
+  }
+  jo = cojo.make.full.emails(jo)
+  jo
+}
+
+cojo_perform_clicker = function(jo) {
+  restore.point("cojo_perform_clicker")
+  course.dir = jo$course.dir;
+
+  hs = compute.course.clicker.highscore(course.dir=course.dir)
+
+  # specify sessions that will be included in the emails
+  session.nums = unique(hs$session.num)
+  session.nums = session.nums[session.nums > jo$last.email.clicker.session.num]
+  # create email content for each clicker sessions
+  for (session.num in sort(session.nums)) {
+    jo = cojo.clicker.highscore.email(jo,hs,session.num)
+  }
+
+  jo$hs_clicker = hs
+  jo
+}
+
+
+cojo_perform_peerquiz = function(jo, tt=NULL) {
+  restore.point("cojo_perform_peerquiz")
+  if (is.null(tt))
+    tt = pq.load.time.table(pq.dir=jo$pq.dir, convert.date.times = TRUE)
+
+  pqs = get.pq.states(tt=tt)
 
   # check if there was run new clicker task tag
   # since the highscore was last send
   last.email.file = file.path(course.dir,"course","peerquiz","LAST_EMAIL.json")
 
-  has.task = file.exists(last.task.file)
-  if (has.task) {
-    last.email.file = file.path(course.dir,"course","clicker","LAST_EMAIL.txt")
-    if (!file.exists(last.email.file)) {
-      jo$last.email.clicker.session.num = 0
-      jobs = c(jobs,"hs_clicker")
+  if (file.exists(last.email.file)) {
+    stop("TO DO")
+  } else {
+    cdf = filter(pqs, active)
+    sdf = cdf %>%
+      select(id, state)
 
-    } else {
-      task.time = file.mtime(last.task.file)
-      email.time = file.mtime(last.email.file)
-      if ((task.time > email.time)) {
-        jo$last.email.clicker.session.num = as.integer(readLines(last.email.file))
-        jobs = c(jobs,"hs_clicker")
-      }
-    }
   }
-  jo$jobs = jobs
+
+  # add jobs depending on new state in cdf
+  for (row in seq_len(NROW(cdf))) {
+    jo = cojo.peerquiz.email(jo=jo,pqs = cdf[row,])
+  }
+
+
+  # save new states
+  #write_json(sdf,last.email.file)
+
   jo
 }
 
+cojo.peerquiz.email = function(jo, id=pqs$id, state=pqs$state,pqs, pq=load.or.compile.pq(id=id, pq.dir=jo$pq.dir)) {
+  restore.point("cojo.peerquiz.email")
 
+  env = jo$email.enclos
+  env$pq.title = str.trim(pq$title)
+  env$start_write = pqs$start_write
+  env$start_guess = pqs$start_guess
+  env$end_guess = pqs$end_guess
 
+  str = rep("", NROW(jo$students))
+  if (state == "write") {
+    str = render.vectorized.compiled.rmd(jo$em.cr.li$peerquiz_write,enclos = env)
+  } else if (state=="guess") {
+    str = render.vectorized.compiled.rmd(jo$em.cr.li$peerquiz_guess,df = jo$students,enclos = env)
+  } else if (state == "closed") {
+    rows = jo$students$emailRanking
+    #if (sum(rows)>0) {
+    #  str[rows] = render.vectorized.compiled.rmd(jo$em.cr.li$quiz_ranking, df[rows,],enclos = jo$email.enclos)
+    #}
 
-
-cojo_perform = function(jo) {
-  restore.point("perform.courser.jobs")
-  course.dir = jo$course.dir; jobs = jo$jobs
-
-  if ("hs_clicker" %in% jobs) {
-    hs = compute.course.clicker.highscore(course.dir=course.dir)
-
-    # specify sessions that will be included in the emails
-    session.nums = unique(hs$session.num)
-    session.nums = session.nums[session.nums > jo$last.email.clicker.session.num]
-    # create email content for each clicker sessions
-    for (session.num in sort(session.nums)) {
-      jo = cojo.clicker.highscore.email(jo,hs,session.num)
-    }
-
-    jo$hs_clicker = hs
   }
 
-  jo = cojo.make.full.emails(jo)
+
+  jo$em.li[[paste0("peerquiz_", id)]] = str
+  jo$send.email = jo$send.email | nchar(str)>0
   jo
 }
+
 
 cojo.clicker.highscore.email = function(jo, hs, session.num) {
   restore.point("cojo.clicker.highscore.email")

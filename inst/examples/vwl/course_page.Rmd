@@ -10,7 +10,7 @@ Vorlesungsskript und Aufgabenblätter für Übungen und Tutorien werden auf der 
 
 {{coursepage_current_tasks()}}
 
-#< note Anleitung zu den interaktive Aufgaben
+#< note Anleitung zu den interaktiven Aufgaben
 Hier werden Sie im Verlauf der Vorlesung verschiedene Aufgaben finden. Zusätzlich zu den Übungen und Tutorien, können Sie mit den Aufgaben Ihren ökonomischen und methodischen Sachverstand sowie Ihre Formulierungsfähigkeiten trainieren.
 
 Jede Aufgabe besteht aus 2 Phasen:
@@ -23,8 +23,8 @@ Punkte:
 - Punkte für Raten: Wenn Sie die Musterlösung auf Platz 1 platziert haben, erhalten Sie 3 Punkte, auf Platz 2 erhalten Sie 2 Punkte, auf Platz 3 einen Punkt und auf Platz 4 keinen Punkt.
 - Punkte für Schreiben: Noch mehr Punkte können Sie erhalten, wenn andere Studierende in der Ratephase ihre geschriebene Antwort auf einen möglichst hohen Platz gesetzt haben. Wenn ein anderer Studierender Ihre Antwort auf Platz 1 gesetzt hat, erhalten Sie **6 Punkte**, auf Platz 2 erhalten Sie 3 Punkte, und auf Platz 3 einen Punkt. Typischerweise werden mehrere Studierende Ihre Antwort platzieren. Sie erhalten den Mittelwert der Punkte aus den Platzierungen dieser Studierenden.
 
-Ihr Ziel in der Schreibphase sollte es also sein, eine Antwort zu formulieren, die für andere Studierende, wie eine Musterlösung aussieht. Da es natürlich erheblich aufwendiger ist, so eine Antwort zu formulieren als die Musterlösung zu raten, können Sie auch deutlich mehr Punkte für das erfolgreiche Schreiben, als für das korrekte Raten erhalten. 
-Genauso wie in den Vorlesungsquizzen, sind die Punkte nicht klausurrelevant. Sie erhalten aber eine gewisses Feedback darüber, wie gut es Ihnen gelungen ist eine Musterlösung zu emulieren. Wir vermuten, dass dies eine ganz gute Übung für die Klausur darstellt, wo es eine gute Strategie ist, möglichst nahe an die Musterlösung zu kommen. Wenn Sie dies in Ihren Einstellung aktiviert haben, sehen Sie auf dieser Seite, wie sich ihr relatives Ranking für die interaktiven Aufgaben im Zeitverlauf entwickelt.
+Ihr Ziel in der Schreibphase sollte es also sein, eine Antwort zu formulieren, die für andere Studierende, wie eine Musterlösung aussieht. Da es erheblich aufwendiger ist, so eine Antwort zu formulieren als die Musterlösung zu raten, können Sie auch deutlich mehr Punkte für das erfolgreiche Schreiben, als für das korrekte Raten erhalten. 
+Genauso wie in den Vorlesungsquizzen, sind die Punkte nicht klausurrelevant. Sie erhalten aber eine gewisses Feedback darüber, wie gut es Ihnen gelungen ist eine Musterlösung zu emulieren. Wir vermuten, dass dies eine ganz gute Übung für die Klausur darstellt, wo es  eine gute Strategie ist, eine korrekte Antwort zu schreiben, die eine Musterlösung sein könnte. Wenn Sie dies in Ihren Einstellung aktiviert haben, sehen Sie auf dieser Seite, wie sich ihr relatives Ranking für die interaktiven Aufgaben im Zeitverlauf entwickelt.
 
 Wir freuen uns über Feedback oder Verbesserungsvorschläge zum Design der interaktiven Aufgaben. Schicken Sie einfach eine Email an den Dozenten oder die Übungsleiter.
 
@@ -37,19 +37,27 @@ Wir freuen uns über Feedback oder Verbesserungsvorschläge zum Design der inter
 {{coursepage_clicker_ranking()}}
 
 
+### Entwicklung Ihres Rankings bei den interaktiven Aufgaben ({{coursepage_num_students()}} Studierende)
+
+{{coursepage_peerquiz_ranking(session.label="Aufgabe")}}
+
+
+
+
 #< note 'Hintergrundinfo zum Ranking'
 
-Das Ranking basiert auf den Antworten bei den Quizzen in den Vorlesungen. Die Zahl der Punkte pro richtige Antwort hängt von der Aufgabe ab und von einen Anpassungsfaktor für jeden Vorlesungstermin (siehe weiter unten).
+Die Punkte und Rankings für die Vorlesungsquizze und interaktiven Aufgaben sind **nicht relevant für die Endnote**. 
+
+Manchen von Ihnen ist das Ranking vielleicht vollkommen egal. Unsere Vermutung ist aber, dass das Ranking im Schnitt trotzdem die Motivation zur aktiven Teilnahme an der Vorlesung und den Aufgaben stärken kann. Mit Blick auf Computer- und Videospiele, scheinen Rankings tatsächlich dazu motivieren zu können, viel Zeit mit Aktivitäten zu verbringen, die einem im Ranking weiter nach vorne bringen. 
+
+## Punktevergabe bei Vorlesungquiz
+Das Ranking basiert auf den Antworten bei den Vorlesungsquiz. Die Zahl der Punkte pro richtige Antwort hängt von der Aufgabe ab und von einen Anpassungsfaktor für jeden Vorlesungstermin (siehe weiter unten).
 
 Es gibt keine negativen Punktzahlen. Wenn Sie keine Antwort abgegeben haben, erhalten Sie 0 Punkte. Es macht also stets Sinn, an jedem Quiz teilzunehmen.
 
 Können Sie an einer Vorlesung nicht teilnehmen, haben Sie die Möglichkeit **bevor** die Vorlesung stattfindet, Antworten auf den unten verlinkten interaktiven Slides abzugeben. Sie erhalten aber einen 20% Punktebonus, wenn Sie in der Vorlesung am Quiz teilnehmen.
 
 Das Ranking basiert auf den Gesamtpunkten aus allen bisherigen Vorlesungsterminen. Je mehr Punkte Sie relativ zu Ihren Kommilitonen erzielt haben, desto weiter oben sind Sie im Ranking.
-
-Dieses Ranking und die Punkte aus den Quizzen sind **nicht relevant für die Endnote**. Versuchen Sie also die Quizze zu lösen, ohne vorher die Lösung zu lesen, die manchmal auf den nächsten Slides gegeben ist.
-
-Manchen von Ihnen ist das Ranking vielleicht vollkommen egal. Unsere Vermutung ist aber, dass das Ranking im Schnitt trotzdem die Motivation zur aktiven Teilnahme an der Vorlesung stärken kann. Mit Blick auf Computer- und Videospiele, scheinen Rankings tatsächlich dazu motivieren zu können, viel Zeit mit Aktivitäten zu verbringen, die einem im Ranking weiter nach vorne bringen. 
 
 Die Punkte eines Vorlesungsterminen werden noch durch zwei Faktoren angepasst.
 
@@ -66,10 +74,10 @@ Unsere Motivation für die Inflation ist wie folgt: Ohne Inflation ist es im Ver
 
 {{coursepage_closed_pq()}}
 
-
+#< if FALSE
 ## Wiederhole Quizze aus der Vorlesung
 
 (Noch nicht implementiert)
 {{courser_repeat_clicker_quiz()}}
-
+#>
 

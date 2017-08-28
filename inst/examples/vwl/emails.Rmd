@@ -1,0 +1,38 @@
+#. subject
+{{course.title}}: Informationen zur Vorlesung
+#. header
+Hallo {{nick}},
+
+hier ist eine automatisch erstellte Informationsemail zur Vorlesung {{course.title}}.
+
+#. peerquiz_write
+
+Aufgabe: Schreibe Antwort für '{{pq.title}}'
+
+Von {{format(start_write,"%a %d.%m. %H:%M")}} bis {{format(start_guess-60,"%a %d.%m. %H:%M")}} können Sie auf der Kursseitee Ihre Antwort schreiben.
+
+#. peerquiz_guess
+
+Aufgabe: Rate Musterlösung für '{{pq.title}}'
+
+Von {{format(start_guess,"%a %d.%m. %H:%M")}} bis {{format(end_guess-60,"%a %d.%m. %H:%M")}} können Sie auf der Kursseite die Musterlösung raten.
+
+
+#. quiz_ranking
+
+#< if session.num > 1
+Im Vorlesungsquiz am {{session.date}} haben Sie {{round(adj.points,1)}} Punkte erzielt.
+
+Insgesamt sind Sie damit um {{abs(rank.change)}} {{ifelse(abs(rank.change)==1,"Rang","Ränge")}} {{ifelse(rank.change<=0,"aufgestiegen","abgestiegen")}}, von Rang {{rank-rank.change}} auf Rang {{rank}} von {{num.stud}} Studierenden.
+#>
+#< if session.num == 1
+Im ersten Vorlesungsquiz am {{session.date}} haben Sie insgesamt {{adj.points}} Punkte erzielt. Von allen {{num.stud}} Studierenden sind Sie damit auf Rang {{rank}}.
+#>
+
+#. footer
+
+Klicken Sie hier um Ihre personlisierte Kursseite zu besuchen:
+{{url.coursepage}}
+
+---
+Diese Email wurde automatisch erstellt, bitte antworten Sie nicht.
