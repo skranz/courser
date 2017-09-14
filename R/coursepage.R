@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="random_1", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="random_2", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
