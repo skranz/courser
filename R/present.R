@@ -1,8 +1,10 @@
-get.presenter.ps.file = function(slides.dir) {
-  restore.point("get.presenter.ps.file")
-  pres = rev(file.path.split(slides.dir))[1]
+# Guess the correct rps file in a slide directory
+# If students want to work through slides at home, use the prefix "home_"
+get.courser.slides.rps = function(slides.dir, home=FALSE, prefix= if (home) "home_" else "") {
+  restore.point("get.courser.slides.rps")
+  pres = paste0(prefix,rev(file.path.split(slides.dir))[1])
+  files = list.files(slides.dir,pattern = glob2rx(paste0(prefix,"*.rps")))
 
-  files = list.files(slides.dir,pattern = glob2rx("*.rps"))
   if (length(files)==0) return(NULL)
   if (length(files)==1) return(files)
 
@@ -17,7 +19,7 @@ get.presenter.ps.file = function(slides.dir) {
 }
 
 # We have a single presenter app for each course
-presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.file=get.presenter.ps.file(slides.dir), teacher="Teacher", query.key = NULL) {
+presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.file=get.courser.slides.rps(slides.dir), teacher="Teacher", query.key = NULL) {
   restore.point("presenterApp")
 
   if (is.null(ps.file)) {

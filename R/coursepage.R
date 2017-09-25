@@ -327,7 +327,7 @@ coursepage_start_clicker = function(label="Start Clicker",mode="buttonlink", app
     token = redraw.course.student.token(cp=cp)
   }
 
-  clicker.url = paste0(cp$clicker$url,"?code=",token)
+  clicker.url = paste0(cp$clicker$url,"?key=",token)
   HTML(paste0('<a id="startClickerAppLink" href="',clicker.url,'" target="_blank" ', if (mode=="buttonlink") 'class="btn btn-default btn-xs"','>',label,'</a>'))
 
 }
@@ -353,6 +353,7 @@ is.empty = function(x, na.is.empty=TRUE) {
 redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentdb, app=getApp(),reset.links=FALSE,...) {
 
   old.token = cp$stud$token
+  userid = cp$stud$userid
   restore.point("redraw.course.student.token")
 
   if (!is.empty(old.token)) {
@@ -370,26 +371,25 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
 
   }
 
-  # draw a token
-  token = shinyEventsLogin::make.login.token.key(userid=cp$userid,nchar=nchar)
+  # draw a token key
+  tok = make.login.token(userid = userid, nchar.key = nchar)
 
   # save in db
-  dbUpdate(db,table = "students",vals = list(token=token),where = list(userid=cp$userid))
-
-  tok = toJSON(list(key=token, userid=cp$userid))
+  dbUpdate(db,table = "students",vals = list(token=tok$key),where = list(userid=cp$userid))
 
   # save in clicker token dir
-  writeLines(tok, file.path(course.dir,"course","clicker","tokens",token))
+  write.login.token(tok=tok, token.dir=file.path(course.dir,"course","clicker","tokens"))
 
   # save in coursepage token dir
-  writeLines(tok, file.path(course.dir,"course","tokens",token))
+  write.login.token(tok=tok, token.dir=file.path(course.dir,"course","tokens"))
 
+  cp$stud$token= tok$key
 
   if (reset.links) {
-    clicker.url = paste0(cp$clicker$url,"?code=",token)
+    clicker.url = paste0(cp$clicker$url,"?key=",tok$key)
     callJS("$('#startClickerAppLink').attr","href",clicker.url)
+    # TO DO: Reset links for slides
+
   }
-
-  return(token)
-
+  return(tok$key)
 }

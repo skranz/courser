@@ -11,4 +11,4 @@ Depends:
   restorepoint, shinyEvents, stringtools, rmdtools, yaml,
   shinyEventsUI, shinyEventsLogin,
   RTutor2, armd, webforms, dbmisc, bbsvg,
-  sendmailR, courserClicker,  courserPeerquiz
+  sendmailR, courserClicker,  courserPeerquiz, courserHomeSlides

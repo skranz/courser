@@ -2,7 +2,7 @@
 
 Sie können sich mit folgenden Zusatz zur Webadresse
 
-`?code={{token}}`
+`?key={{token}}`
 
 direkt auf diese Seite und das Vorlesungsquiz einloggen ohne jedes mal Ihren Nutzernamen und Passwort eingeben zu müssen. Die Links in den Ihnen zugesandten Emails enthalten diesen Code. Sollten Sie Befürchten, dass jemand anderes diesen Code kennt und sich unter Ihren Namen anmeldet, können Sie durch Druck auf folgenden Knopf einen neuen Code erstellen.
 

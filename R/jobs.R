@@ -35,9 +35,9 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
 
   students = dbGet(db,"students", schemas=schemas)
 
-  students$url.clicker = paste0(settings$base_url,":",settings$clicker$port,"/clicker?code=", students$token)
+  students$url.clicker = paste0(settings$base_url,":",settings$clicker$port,"/clicker?key=", students$token)
 
-  students$url.coursepage = paste0(settings$base_url,":",settings$coursepage$port,"/coursepage?code=", students$token)
+  students$url.coursepage = paste0(settings$base_url,":",settings$coursepage$port,"/coursepage?key=", students$token)
 
   pq.dir = file.path(course.dir,"course","peerquiz")
   has.pq = dir.exists(pq.dir)
