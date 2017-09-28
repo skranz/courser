@@ -7,8 +7,10 @@ examples.teacherhub = function() {
   res = viewApp(app, port=app$glob$opts$teacherhub$port,launch.browser = rstudioapi::viewer)
 
   if (dir.exists(res)) {
-    restore.point.options(display.restore.point = TRUE)
-    shiny::runApp(res,launch.browser = rstudioapi::viewer)
+    source(file.path(res,"app.R"))
+    viewApp(app)
+    #restore.point.options(display.restore.point = TRUE)
+    #shiny::runApp(res,launch.browser = rstudioapi::viewer)
   }
 }
 
@@ -40,7 +42,7 @@ examples.teacherhub = function() {
 
 
 TeacherHubApp = function(course.dir, courseid = basename(course.dir)
-, login.db.dir=NULL, app.title=paste0("Teacherhub: ",courseid), ...) {
+, login.db.dir=NULL, app.title=paste0("Teacherhub: ",courseid), token.dir = file.path(course.dir,"course", "teacher_tokens"), login.by.query.key="allow", ...) {
   restore.point("TeacherHubApp")
   app = eventsApp()
 
@@ -50,11 +52,12 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
   glob$course.dir = app$course.dir = course.dir
   glob$courseid = app$courseid = courseid
 
+  glob$token.dir = token.dir
   glob$opts = init.th.opts(course.dir)
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
 
-  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",...)
+  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, ...)
 
   restore.point("TeacherHubApp.with.lop")
 
@@ -95,11 +98,35 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings
   opts
 }
 
-teacher.hub.login = function(userid,app=getApp(),...) {
+teacher.hub.login = function(userid,app=getApp(),tok=NULL,...) {
   restore.point("teacher.hub.login")
 
   course.dir = app$glob$course.dir
   courseid = basename(course.dir)
+  opts = app$glob$opts
+
+
+  # If we don't have a permanent tokens
+  # write a temporary token
+  # valid for 24 hours
+  if (is.null(tok)) {
+    # clean up temporary tokens from time to time
+    if (runif(1)<0.3)
+      remove.expired.login.tokens(app$glob$token.dir)
+    tok = make.login.token(userid=userid,validMinutes = 60*24)
+    write.login.token(tok, app$glob$token.dir)
+  }
+
+  app$tok = tok
+
+  # Set a cookie to the login token such that we
+  # autmotacially authenticate to a slide
+  # presenterApp
+  if (!is.null(opts$present.query.key)) {
+    set.login.token.cookie(tok=list(key=opts$present.query.key),"courserPresenterCookie")
+  } else {
+    set.login.token.cookie(tok=tok,"courserPresenterCookie")
+  }
 
   th = as.environment(nlist(
     userid,
@@ -277,28 +304,10 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
   slides = data$slide
   slides.dir = data$dir
 
-
   opts = app$glob$opts
-
-
-  #present.dir = file.path(course.dir,"course","shiny-server","present")
-  #app.base.dir = paste0(shiny.dir, file.path.diff(slides.dir, app$glob$course.dir))
-
-  #if (!opts$local) {
-  #  slides.dir = file.path()
-  #}
-
-  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts, query.key=opts$present.query.key)
-
-  # add course to clicker
-  #write.clicker.running(courseid = courseid,clicker.dir = clicker.dir)
-
+  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts, query.key=opts$present.query.key, token.dir=app$glob$token.dir)
 
   url = paste0(opts$base_url,":", opts$present$port, "/slides/",slides)
-  if (!is.null(opts$present.query.key)) {
-    url = paste0(url,"?key=",opts$present.query.key)
-  }
-
 
   if (isTRUE(opts$local)) {
     stopApp(app.dir)

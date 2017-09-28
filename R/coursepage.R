@@ -50,14 +50,16 @@ create.studentdb = function(course.dir, schema.file = NULL) {
   db
 }
 
-CoursePageApp = function(course.dir, courseid = basename(course.dir)
-, login.db.dir=NULL, app.title=paste0(courseid), token.login="allow", ...) {
+CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.dir=NULL, app.title=paste0(courseid), login.by.query.key="allow",  token.dir = file.path(course.dir,"course","stud_tokens"), cookie.name="courserStudLoginCookie", ...) {
   restore.point("CoursePageApp")
   app = eventsApp()
 
 
   opts = init.th.opts(course.dir = course.dir)
   opts$courseid = courseid
+  opts$token.dir = token.dir
+  opts$clicker.token.dir = file.path(opts$clicker.dir,"tokens")
+  opts$cookie.name = cookie.name
 
   cp = as.environment(opts)
 
@@ -94,7 +96,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
 
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
-  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = token.login, token.dir=file.path(course.dir,"course","tokens"), ...)
+  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", ...)
 
   restore.point("CoursePageApp.with.lop")
 
@@ -105,7 +107,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir)
 }
 
 
-coursepage.login = function(userid=app$cp$userid,app=getApp(),...) {
+coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,...) {
   restore.point("coursepage.login")
 
   cp = app$cp
@@ -139,6 +141,7 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
   } else {
     stud = as.list(cp$stud[1,])
   }
+
   label = app$glob$strings$setting_btn
 
 
@@ -156,6 +159,10 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
 
       stud[names(values)] = values
       stud = student.default.aux.values(stud = stud)
+
+      if (is.null(stud$token))
+        stud$token = redraw.course.student.token(cp=cp)
+
 
       res = dbInsert(db, "students", stud, schemas=student.schemas())
       cp$stud = res$values
@@ -332,6 +339,21 @@ coursepage_start_clicker = function(label="Start Clicker",mode="buttonlink", app
 
 }
 
+coursepage_homeslides = function(..., cp=app$cp, app=getApp()) {
+  restore.point("coursepage_homeslides")
+
+  last.dir = if (isTRUE(cp$local)) "local-home-slides" else "home-slides"
+
+  dir = file.path(cp$course.dir,"course","shiny-server",last.dir)
+
+  slides = list.files(dir)
+  urls = paste0(cp$base_url,":",cp$homeslides$port,"/",slides,"?key=", cp$stud$token)
+
+  html = paste0('<li><a href="',urls,'" target="_blank">',slides,'</a></li>', collapse="\n")
+  html = paste0("<ul>\n", html,"\n</ul>")
+  html
+}
+
 coursepage_redraw_token_button = function(label="New URL Code",msg="A new url code has been drawn: ") {
   ui = tagList(
     smallButton(id="redrawTokenBtn", label=label),
@@ -350,21 +372,21 @@ is.empty = function(x, na.is.empty=TRUE) {
   FALSE
 }
 
-redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentdb, app=getApp(),reset.links=FALSE,...) {
+redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentdb, app=getApp(),reset.links=FALSE,stud=cp$stud, set.cookie = TRUE,...) {
 
-  old.token = cp$stud$token
-  userid = cp$stud$userid
+  old.token = stud$token
+  userid = stud$userid
   restore.point("redraw.course.student.token")
 
   if (!is.empty(old.token)) {
 
     # remove clicker token
-    file = file.path(course.dir,"course","clicker","tokens",old.token)
+    file = file.path(cp$clicker.token.dir,old.token)
     if (file.exists(file))
       file.remove(file)
 
     # remove coursepage token
-    file = file.path(course.dir,"course","tokens",old.token)
+    file = file.path(cp$token.dir,old.token)
     if (file.exists(file))
       file.remove(file)
 
@@ -378,10 +400,16 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
   dbUpdate(db,table = "students",vals = list(token=tok$key),where = list(userid=cp$userid))
 
   # save in clicker token dir
-  write.login.token(tok=tok, token.dir=file.path(course.dir,"course","clicker","tokens"))
+  write.login.token(tok=tok, token.dir=cp$clicker.token.dir)
 
   # save in coursepage token dir
-  write.login.token(tok=tok, token.dir=file.path(course.dir,"course","tokens"))
+  write.login.token(tok=tok, token.dir=cp$token.dir)
+
+  # set cookie that allows login
+  # into home slides or clicker app
+  # without url query key
+  if (set.cookie)
+    try(set.login.token.cookie(tok=tok,cp$cookie.name))
 
   cp$stud$token= tok$key
 

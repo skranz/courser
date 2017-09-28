@@ -33,11 +33,15 @@ courserHomeSlidesApp = function(courseid="", slides.dir, token.dir,clicker.dir, 
 
   ps = read.rps(file.path(slides.dir,ps.file))
 
-  app = slidesApp(ps = ps,user.name = ".HOME.",dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, rtutor=TRUE))
+  # save.nothing = TRUE prevents creation of an .ups file
+  app = slidesApp(ps = ps,user.name = ".HOME.",dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, rtutor=TRUE,save.nothing=TRUE))
 
   # require correct query key in url
   if (require.query.key) {
-    login.fun = app$initHandler
+    orgInitHandler = app$initHandler
+    login.fun = function(...) {
+      orgInitHandler(...,app=getApp())
+    }
     login.failed.fun = function(...) {
       args = list(...)
       restore.point("failedcourserHomeSlidesAppLogin")
@@ -45,24 +49,24 @@ courserHomeSlidesApp = function(courseid="", slides.dir, token.dir,clicker.dir, 
       setInnerHTML(selector="body", html = "Unknown user key. No slides are shown.")
       #stopApp()
     }
-    restore.point("presenterAppWithQueryKey")
-    lop = loginModule(login.by.query.key = "require", login.fun = login.fun, login.failed.fun=login.failed.fun,token.dir=token.dir )
+    lop = loginModule(login.by.query.key = "require", login.fun = login.fun, login.failed.fun=login.failed.fun, token.dir=token.dir, cookie.name = "courserStudentLoginToken")
     app$initHandler = function(...) {
-      restore.point("homeSlidesQueryLogin")
       initLoginDispatch(lop)
     }
   }
   app
 }
 
-makeHomeSlidesAppDir = function(courseid,slides, opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE, query.key = NULL) {
+makeHomeSlidesAppDir = function(courseid,slides,local=opts$local, course.dir=opts$course.dir, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE, query.key = NULL,  opts=NULL, make.figure.dir=FALSE) {
   restore.point("makeHomeSlidesAppDir")
   #stop()
 
-  course.dir = opts$course.dir
-  app.base.dir = file.path(course.dir,"course","shiny-server","home","slides")
+  local = first.non.null(local, TRUE)
+  last.dir = if (local) "local-home-slides" else "home-slides"
+
+
+  app.base.dir = file.path(course.dir,"course","shiny-server",last.dir)
   app.dir = file.path(app.base.dir, slides)
-  token.dir=file.path(course.dir,"course","tokens")
 
   if (del.old.app.dirs) {
     dirs = setdiff(list.dirs(app.base.dir, recursive=FALSE),app.dir)
@@ -78,19 +82,20 @@ makeHomeSlidesAppDir = function(courseid,slides, opts, hash=random.string(1,127)
 
   }
   figure.dir = file.path(app.dir,"figure")
-  if (!dir.exists(figure.dir)) {
+  if (!dir.exists(figure.dir) & make.figure.dir) {
     dir.create(figure.dir,recursive = TRUE)
     Sys.chmod(figure.dir, mode="777", use_umask = FALSE)
   }
 
-  if (opts$local) {
-    slides.dir = file.path(opts$course.dir,"slides",slides)
-    clicker.dir = file.path(opts$course.dir,"course","clicker")
-
+  if (local) {
+    slides.dir = paste0("../../../", "slides/", slides)
+    clicker.dir = paste0("../../", "clicker")
+    token.dir = paste0("../../", "stud_tokens")
   } else {
     # In a docker container, we have a fixed directory structure
     slides.dir = file.path("/srv/slides",slides)
     clicker.dir = "/srv/clicker"
+    token.dir = "/srv/tokens"
   }
 
 
@@ -99,7 +104,7 @@ makeHomeSlidesAppDir = function(courseid,slides, opts, hash=random.string(1,127)
 
 library("courser")
 slides.dir = "',slides.dir,'"
-clicker.dir = "',opts$clicker.dir,'"
+clicker.dir = "',clicker.dir,'"
 token.dir = "',token.dir,'"
 courseid = "',courseid,'"
 

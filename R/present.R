@@ -19,7 +19,7 @@ get.courser.slides.rps = function(slides.dir, home=FALSE, prefix= if (home) "hom
 }
 
 # We have a single presenter app for each course
-presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.file=get.courser.slides.rps(slides.dir), teacher="Teacher", query.key = NULL) {
+presenterApp = function(courseid="", slides.dir, token.dir=NULL,clicker.dir=NULL, ps.file=get.courser.slides.rps(slides.dir), teacher="Teacher", query.key = NULL) {
   restore.point("presenterApp")
 
   if (is.null(ps.file)) {
@@ -28,11 +28,16 @@ presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.
 
   ps = read.rps(file.path(slides.dir,ps.file))
 
-  app = slidesApp(ps = ps,user.name = teacher,dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, use.clicker=TRUE))
+  # save.nothing = TRUE prevents creation of an .ups
+  # file
+  app = slidesApp(ps = ps,user.name = teacher,dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, use.clicker=TRUE, save.nothing=TRUE))
 
-  # require correct query key in url
-  if (!is.null(query.key)) {
-    login.fun = app$initHandler
+  # require login by query.key (fixed or token) or cookie
+  if (!is.null(query.key) | !is.null(token.dir)) {
+    orgInitHandler = app$initHandler
+    login.fun = function(...) {
+      orgInitHandler(...,app=getApp())
+    }
     login.failed.fun = function(...) {
       args = list(...)
       restore.point("failedPresenterAppLogin")
@@ -40,7 +45,7 @@ presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.
       #stopApp()
     }
     restore.point("presenterAppWithQueryKey")
-    lop = loginModule(login.by.query.key = "require",fixed.query.key = query.key, login.fun = login.fun, login.failed.fun=login.failed.fun )
+    lop = loginModule(login.by.query.key = "require",fixed.query.key = query.key, login.fun = login.fun, login.failed.fun=login.failed.fun, token.dir=token.dir, cookie.name = "courserPresenterCookie")
     app$initHandler = function(...) {
       initLoginDispatch(lop)
     }
@@ -50,7 +55,7 @@ presenterApp = function(courseid="", slides.dir, token.dir,clicker.dir=NULL, ps.
   app
 }
 
-makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = "", del.old.app.dirs = FALSE, query.key = NULL) {
+makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = NULL, del.old.app.dirs = FALSE, query.key = NULL) {
   restore.point("makePresenterAppDir")
   #stop()
 
@@ -87,25 +92,21 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
     clicker.dir = "/srv/clicker"
   }
 
-  # token.dir not yet used
-  token.dir = NA
-  if (!is.null(query.key)) {
-    query.key.str = paste0('query.key = "', query.key,'"')
-  } else {
-    query.key.str = paste0('query.key = NULL')
-  }
-
   code = paste0('
 # Automatically generated presentation app
 
 library("courser")
+
+# turn off restore points for better performance
+# set.storing(FALSE)
+
 slides.dir = "',slides.dir,'"
 clicker.dir = "',opts$clicker.dir,'"
-token.dir = "',token.dir,'"
 courseid = "',courseid,'"
-',query.key.str,'
+token.dir = ',as.code.string(token.dir),'
+query.key = ',as.code.string(query.key),'
 
-app = presenterApp(courseid=courseid, slides.dir=slides.dir, token.dir=token.dir, clicker.dir=clicker.dir, query.key=query.key)
+app = presenterApp(courseid=courseid, slides.dir=slides.dir, clicker.dir=clicker.dir, query.key=query.key,token.dir=token.dir)
 
 appReadyToRun(app)
 
@@ -115,4 +116,12 @@ shinyApp(ui = app$ui, server = app$server)
   try(writeLines(code, app.file))
 
   app.dir
+}
+
+
+as.code.string = function(x) {
+  if (is.null(x)) return('NULL')
+  if (is.na(x)) return('NA')
+  if (is.character(x)) return(paste0('"',x,'"'))
+  as.character(x)
 }
