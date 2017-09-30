@@ -57,7 +57,7 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
 
-  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, ...)
+  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, ...)
 
   restore.point("TeacherHubApp.with.lop")
 
@@ -220,8 +220,18 @@ th.center.ui = function(th,opts=app$glob$opts, app=getApp()) {
     h3("Peerquiz Timetable"),
     pq.timetable.ui(pq.dir=opts$pq.dir)
   )
+#
+#   part.ui = tagList(
+#     h3("Participants"),
+#     uiOutput("uiStudNumMsg"),
+#     textAreaInput("thStudsInDB",label = ""),
+#     textAreaInput("thNewStudents", label="Emailadresses of new students (can be copied from Moodle)"),
+#     simpleButton("thSendWelcomeEmailBtn","Add to DB and send Welcome Email")
+#   )
+
   tabsetPanel(
-    tabPanel("Teacherhub", tt.ui)
+    tabPanel("Time table", tt.ui)
+    #tabPanel("Participants", part.ui)
   )
 
 }
