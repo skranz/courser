@@ -93,6 +93,11 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings
 
   opts$clicker$url = paste0(opts$base_url,":",opts$clicker$port,"/clicker")
 
+  opts$coursepage$url = paste0(opts$base_url,":",opts$coursepage$port,"/coursepage")
+
+
+
+
   # peerquiz
   pq.dir = file.path(course.dir,"course","peerquiz")
   opts$has.pq = dir.exists(pq.dir)

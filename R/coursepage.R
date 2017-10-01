@@ -97,7 +97,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   smtp = first.none.null(smtp, list(from = opts$email$from,smtp = list(host.name = opts$email$smtpServer)))
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
-  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", smtp=smtp, ...)
+  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", smtp=smtp, app.url = opts$coursepage$url, ...)
 
   restore.point("CoursePageApp.with.lop")
 
