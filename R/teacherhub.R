@@ -42,7 +42,7 @@ examples.teacherhub = function() {
 
 
 TeacherHubApp = function(course.dir, courseid = basename(course.dir)
-, login.db.dir=NULL, app.title=paste0("Teacherhub: ",courseid), token.dir = file.path(course.dir,"course", "teacher_tokens"), login.by.query.key="allow", ...) {
+, login.db.dir=NULL, app.title=paste0("Teacherhub: ",courseid), token.dir = file.path(course.dir,"course", "teacher_tokens"), login.by.query.key="allow", smtp=NULL, ...) {
   restore.point("TeacherHubApp")
   app = eventsApp()
 
@@ -55,10 +55,12 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
   glob$token.dir = token.dir
   glob$opts = init.th.opts(course.dir)
 
+  smtp = first.none.null(smtp, list(from = glob$opts$email$from,smtp = list(host.name = glob$opts$email$smtpServer)))
+
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
 
 
-  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, app.url = glob$opts$teacherhub$url, ...)
+  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, app.url = glob$opts$teacherhub$url, smtp=smtp, ...)
 
   restore.point("TeacherHubApp.with.lop")
 
@@ -106,7 +108,7 @@ teacher.hub.login = function(userid,app=getApp(),tok=NULL,...) {
   restore.point("teacher.hub.login")
 
   course.dir = app$glob$course.dir
-  courseid = basename(course.dir)
+  courseid = first.non.null(app$courseid, basename(course.dir))
   opts = app$glob$opts
 
 
@@ -220,7 +222,7 @@ show.teacher.hub.ui = function(th=app$th,app=getApp()) {
 th.center.ui = function(th,opts=app$glob$opts, app=getApp()) {
   restore.point("th.center.ui")
 
-  tt.ui = if (opts$has.pq) tagList(
+  tt.ui = if (opts$has.pq) div(style="padding-left: 1em",
     h3("Peerquiz Timetable"),
     pq.timetable.ui(pq.dir=opts$pq.dir)
   )
