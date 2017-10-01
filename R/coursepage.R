@@ -50,7 +50,7 @@ create.studentdb = function(course.dir, schema.file = NULL) {
   db
 }
 
-CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.dir=NULL, app.title=paste0(courseid), login.by.query.key="allow",  token.dir = file.path(course.dir,"course","stud_tokens"), cookie.name="courserStudLoginCookie", ...) {
+CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.dir=NULL, app.title=paste0(courseid), login.by.query.key="allow",  token.dir = file.path(course.dir,"course","stud_tokens"), cookie.name="courserStudLoginCookie", smtp=NULL, ...) {
   restore.point("CoursePageApp")
   app = eventsApp()
 
@@ -94,9 +94,10 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   app$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
 
+  smtp = first.none.null(smtp, list(from = glob$opts$email$from,smtp = list(host.name = glob$opts$email$smtpServer)))
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
-  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", ...)
+  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", smtp=smtp, ...)
 
   restore.point("CoursePageApp.with.lop")
 
