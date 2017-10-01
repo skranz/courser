@@ -46,7 +46,8 @@ courserHomeSlidesApp = function(courseid="", slides.dir, token.dir,clicker.dir, 
       args = list(...)
       restore.point("failedcourserHomeSlidesAppLogin")
       cat("\nlogin failed, don't show slides...")
-      setInnerHTML(selector="body", html = "Unknown user key. No slides are shown.")
+      evalJS('alert("No authorized user detected. Interactive functions are turned off.");')
+      #setInnerHTML(selector="body", html = "Unknown user key. No slides are shown.")
       #stopApp()
     }
     lop = loginModule(login.by.query.key = "require", login.fun = login.fun, login.failed.fun=login.failed.fun, token.dir=token.dir, cookie.name = "courserStudentLoginToken")

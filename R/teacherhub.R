@@ -326,7 +326,7 @@ th.show.slides.click = function(data,..., courseid = app$courseid, app=getApp(),
   slides.dir = data$dir
 
   opts = app$glob$opts
-  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts, query.key=opts$present.query.key, token.dir=app$glob$token.dir)
+  app.dir = makePresenterAppDir(courseid=courseid,slides=slides,teacher=th$userid, hash="app", opts=opts, query.key=opts$present.query.key)
 
   url = paste0(opts$base_url,":", opts$present$port, "/slides/",slides)
 

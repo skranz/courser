@@ -41,6 +41,8 @@ presenterApp = function(courseid="", slides.dir, token.dir=NULL,clicker.dir=NULL
     login.failed.fun = function(...) {
       args = list(...)
       restore.point("failedPresenterAppLogin")
+      evalJS('alert("No authorized user detected for slide presentation. Interactive functions are turned off.");')
+
       cat("\nlogin failed show without events...")
       #stopApp()
     }
@@ -55,7 +57,7 @@ presenterApp = function(courseid="", slides.dir, token.dir=NULL,clicker.dir=NULL
   app
 }
 
-makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127),token.dir = NULL, del.old.app.dirs = FALSE, query.key = NULL) {
+makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=random.string(1,127), del.old.app.dirs = FALSE, query.key = NULL) {
   restore.point("makePresenterAppDir")
   #stop()
 
@@ -85,11 +87,13 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
   if (opts$local) {
     slides.dir = file.path(opts$course.dir,"slides",slides)
     clicker.dir = file.path(opts$course.dir,"course","clicker")
+    token.dir = file.path(opts$course.dir, "course", "teacher_tokens")
 
   # On a docker server, we have a fixed directory structure
   } else {
     slides.dir = file.path("/srv/slides",slides)
     clicker.dir = "/srv/clicker"
+    token.dir = "/srv/tokens"
   }
 
   code = paste0('
