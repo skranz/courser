@@ -58,7 +58,6 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   opts = init.th.opts(course.dir = course.dir)
   opts$courseid = courseid
   opts$token.dir = token.dir
-  opts$clicker.token.dir = file.path(opts$clicker.dir,"tokens")
   opts$cookie.name = cookie.name
 
   cp = as.environment(opts)
@@ -380,18 +379,10 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
   restore.point("redraw.course.student.token")
 
   if (!is.empty(old.token)) {
-
-    # remove clicker token
-    file = file.path(cp$clicker.token.dir,old.token)
-    if (file.exists(file))
-      file.remove(file)
-
-    # remove coursepage token
+    # remove student token
     file = file.path(cp$token.dir,old.token)
     if (file.exists(file))
       file.remove(file)
-
-
   }
 
   # draw a token key
@@ -399,9 +390,6 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
 
   # save in db
   dbUpdate(db,table = "students",vals = list(token=tok$key),where = list(userid=cp$userid))
-
-  # save in clicker token dir
-  write.login.token(tok=tok, token.dir=cp$clicker.token.dir)
 
   # save in coursepage token dir
   write.login.token(tok=tok, token.dir=cp$token.dir)

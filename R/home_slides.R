@@ -4,7 +4,7 @@ examples.courserHomeSlidesApp = function() {
   course.dir = "D:/libraries/courser/courses/vwl"
   courseid   = "vwl"
   slides     = "Kap1"
-  token.dir  = file.path(course.dir,"course","tokens")
+  token.dir  = file.path(course.dir,"course","stud_tokens")
   slides.dir = file.path(course.dir,"slides", slides)
   clicker.dir= file.path(course.dir,"course","clicker")
 
