@@ -57,7 +57,8 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
 
-  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, ...)
+
+  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, app.url = glob$opts$teacherhub$url, ...)
 
   restore.point("TeacherHubApp.with.lop")
 
@@ -85,6 +86,9 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings
     opts$teachers.dir = "/srv/teachers"
     opts$present.shiny.dir = "/srv/present"
   }
+
+  opts$teacherhub$url = paste0(opts$base_url,":",opts$teacherhub$port,"/th")
+
   opts$clicker$url = paste0(opts$base_url,":",opts$clicker$port,"/clicker")
 
   # peerquiz
