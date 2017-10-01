@@ -19,6 +19,8 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   clicker.dir = file.path(course.dir,"course/clicker")
   df = update.all.aggregate.task.data(clicker.dir,return.data = TRUE)
 
+  if (is.null(df)) return(NULL)
+
   # create session.date and session.num
   df = df %>%
     group_by(task.id, tag) %>%
