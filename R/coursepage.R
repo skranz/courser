@@ -177,7 +177,7 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
       stud = student.default.aux.values(stud = stud)
 
       if (is.null(stud$token))
-        stud$token = redraw.course.student.token(cp=cp)
+        stud$token = redraw.course.student.token(cp=cp,stud=stud)
 
 
       res = dbInsert(db, "students", stud, schemas=student.schemas())
@@ -431,7 +431,8 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
   if (set.cookie)
     try(set.login.token.cookie(tok=tok,cp$cookie.name))
 
-  cp$stud$token= tok$key
+  if (!is.null(cp$stud))
+    cp$stud$token= tok$key
 
   if (reset.links) {
     clicker.url = paste0(cp$clicker$url,"?key=",tok$key)
