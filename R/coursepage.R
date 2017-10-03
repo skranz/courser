@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="random_2", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="random_10", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE, send.welcome.email = FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
@@ -50,7 +50,7 @@ create.studentdb = function(course.dir, schema.file = NULL) {
   db
 }
 
-CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.dir=NULL, app.title=paste0(courseid), login.by.query.key="allow",  token.dir = file.path(course.dir,"course","stud_tokens"), cookie.name="courserStudLoginCookie", smtp=NULL, ...) {
+CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.dir=NULL, app.title=paste0(courseid), login.by.query.key="allow",  token.dir = file.path(course.dir,"course","stud_tokens"), cookie.name="courserStudLoginCookie", smtp=NULL, send.welcome.email=TRUE, ...) {
   restore.point("CoursePageApp")
   app = eventsApp()
 
@@ -61,6 +61,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   opts$cookie.name = cookie.name
 
   cp = as.environment(opts)
+  cp$smtp = cp$email
 
   if (opts$has.pq) {
     cp$apq = init.apq(pq.dir=cp$pq.dir)
@@ -93,7 +94,13 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   app$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
 
+  cp$send.welcome.email = send.welcome.email
+  if (cp$send.welcome.email)
+    coursepage.compile.welcome.email(cp=cp)
+
   smtp = first.none.null(smtp, list(from = opts$email$from,smtp = list(host.name = opts$email$smtpServer)))
+
+
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
   lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", smtp=smtp, app.url = opts$coursepage$url, ...)
@@ -129,6 +136,10 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,...) {
   }
 
   cp$stud = as.list(cp$stud)
+
+  # Set cookie to login into clicker
+  set.login.token.cookie(tok=list(userid=cp$stud$userid, key=cp$stud$token), "courserClickerCookie")
+
   show.coursepage()
 }
 
@@ -137,7 +148,7 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
 
   db = cp$db
   if (NROW(cp$stud) == 0) {
-    stud = list(userid=cp$userid,email=cp$email)
+    stud = list(userid=cp$userid,email=cp$email, nick=random.nickname(1))
   } else {
     stud = as.list(cp$stud[1,])
   }
@@ -151,11 +162,16 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
   add.form.handlers(form=cp$settings.form,btn.id="settingsModalBtn",function(values,...)  {
       args = list(...)
       restore.point("settingsModalBtn")
-      res = dbGet(db, "students", params=values["nick"], schemas = student.schemas())
-      if (NROW(res)>0) {
-        show.form.alert(form=form, msg=paste0("There is already a user with alias ", values$nick, ". Please pick another alias"))
-      }
+
+      #res = dbGet(db, "students", params=values["nick"], schemas = student.schemas())
+      #if (NROW(res)>0) {
+      #  show.form.alert(form=form, msg=paste0("There is already a user with alias ", values$nick, ". Please pick another alias"))
+      #}
+
+      # Draw a random nickname
+      #values$nick = paste0(courserClicker::random.nickname(1),"_", sample.int(10000,1))
       values$email = values$userid
+
 
       stud[names(values)] = values
       stud = student.default.aux.values(stud = stud)
@@ -168,7 +184,21 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
       cp$stud = res$values
       dbInsert(db, "students_hist", c(list(mtime=Sys.time()),cp$stud), schemas=student.schemas())
 
+      # Update restricted_login
+      userhash = digest(cp$stud$userid)
+      file = file.path(cp$clicker.dir,"restricted_login", userhash)
+      if (isTRUE(cp$stud$simpleClickerLogin)) {
+        if (file.exists(file)) file.remove(file)
+      } else {
+        if (!file.exists(file)) writeLines("block",file)
+      }
+
+      if(isTRUE(cp$send.welcome.email))
+        coursepage.send.welcome.email(cp=cp, stud=stud)
+
       removeModal()
+
+      set.login.token.cookie(tok=list(userid=stud$userid, key=stud$token), "courserClickerCookie")
       show.coursepage()
     })
     title = replace.whiskers(app$glob$strings$setting_title, list(courseid=cp$courseid, course.title=cp$course.title))
@@ -232,6 +262,7 @@ coursepage.submit.settings = function(values, app=getApp(),cp=app$cp,... ) {
 # need to put to external file at some point
 student.default.aux.values = function(stud) {
   stud$defaultShowRanking = stud$showRanking = stud$emailRanking = sample(c(FALSE,TRUE),1)
+  stud$simpleClickerLogin = TRUE
   stud
 }
 
@@ -410,3 +441,45 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
   }
   return(tok$key)
 }
+
+coursepage.send.welcome.email = function(cp, stud=cp$stud) {
+  restore.point("coursepage.send.welcome.email")
+  cr.li = cp$welcome.email.cr.li
+  smtp = cp[["smtp"]]
+
+  if (is.null(cr.li) | is.null(smtp)) return()
+
+  email.enclos = c(stud,list(
+    coursepage.url = cp$coursepage$url,
+    coursepage.url.with.key = paste0(cp$coursepage$url,"?key=", stud$token),
+    clicker.url = cp$clicker$url,
+    clicker.url.with.key = paste0(cp$clicker$url,"?key=", stud$token),
+    course.title = cp$course.title
+  ))
+
+  subject = render.compiled.rmd(cr.li$subject,envir = email.enclos)
+
+  body = render.compiled.rmd(cr.li$body,envir = email.enclos)
+  from = smtp$from
+  control = list(smtpServer = smtp$smtpServer)
+
+  # Try to send the welcome email
+  try(sendmailR::sendmail(from=from, to=stud$email, subject=subject, msg = body, control=control))
+
+}
+
+coursepage.compile.welcome.email = function(cp, file = file.path(cp$course.dir, "course","settings","welcome_email.Rmd")) {
+  restore.point("coursepage.compile.welcome.email")
+  if (!file.exists(file)) return()
+
+  txt = readUtf8(file,sep.lines = FALSE)
+  li = parse.hashdot.yaml(txt)
+  cr.li = lapply(li, function(txt) {
+    compile.rmd(text = txt,fragment.only = TRUE,out.type = "md")
+  })
+  cp$welcome.email.cr.li = cr.li
+  cr.li
+}
+
+
+

@@ -9,3 +9,14 @@ fields:
     label: |
       Sende Email mit Ranking nach jeder Vorlesung?
     choices: {'Ja': TRUE, 'Nein': FALSE}
+  simpleClickerLogin:
+    tab: Extra
+    label: |
+      Anmeldung zum Vorlesungsquiz einfach durch Emailadresse
+    choices: {'Ja': TRUE, 'Nein': FALSE}
+    help: |
+      Soll es möglich sein, sich zum Vorlesungsquiz einfach durch Eintrag
+      Ihrer Emailadresse anzumelden. Wenn Sie diese Option ausschalten
+      müssen Sie sich über diese Kursseite anmelden oder mit dem Link
+      den Sie per Email erhalten haben. Ausschalten der Option verhindert,
+      dass sich jemand anderes unter Ihren Namen anmeldet.

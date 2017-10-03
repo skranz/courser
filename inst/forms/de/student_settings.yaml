@@ -2,12 +2,13 @@ fields:
   userid:
     label: 'Nutzerkennung'
     readonly: TRUE
-  nick:
-    label: 'Alias'
-    help: |
-      Ihr Alias ist der Name der allen Nutzern angezeigt wird.
-      Bitte vermeiden Sie reale Namen, sondern nutzen Sie Namen, die
-      klar als Fantasienamen erkennbar sind.
+#  nick:
+#    label: 'Alias'
+#    help: |
+#      Ihr Alias ist der Name der allen Nutzern angezeigt werden kann.
+#      Bitte vermeiden Sie reale Namen, sondern nutzen Sie Namen, die
+#      klar als Fantasienamen erkennbar sind. Sie können Ihren Alias
+#      auch später noch ändern.
   gender:
     label: 'Geschlecht'
     choices: {'Männlich': m, 'Weiblich': f}

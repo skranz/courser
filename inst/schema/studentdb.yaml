@@ -17,6 +17,7 @@ students:
     showRanking: BOOLEAN
     emailRanking: BOOLEAN
     defaultShowRanking: BOOLEAN
+    simpleClickerLogin: BOOLEAN
   indexes:
     - "CREATE UNIQUE INDEX students1 on students (userid)"
 
