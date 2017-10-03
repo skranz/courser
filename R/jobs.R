@@ -281,7 +281,7 @@ cojo_send_emails = function(jo) {
       next
     }
     cat("\nSend email to ", stud$email, " with title ",jo$email.subject[row],"...")
-    sendmailR::sendmail(from=from, to=stud$email, subject=jo$email.subject[row], msg = jo$email.txt[row], control=control)
+    sendmailR::sendmail(from=from, to=stud$email, subject=jo$email.subject[row], msg = sep.lines(jo$email.txt[row]), control=control)
   }
 
 }

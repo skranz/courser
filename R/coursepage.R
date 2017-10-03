@@ -464,7 +464,7 @@ coursepage.send.welcome.email = function(cp, stud=cp$stud) {
   control = list(smtpServer = smtp$smtpServer)
 
   # Try to send the welcome email
-  try(sendmailR::sendmail(from=from, to=stud$email, subject=subject, msg = body, control=control))
+  try(sendmailR::sendmail(from=from, to=stud$email, subject=subject, msg = sep.lines(body), control=control))
 
 }
 
