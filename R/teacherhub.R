@@ -3,7 +3,7 @@ examples.teacherhub = function() {
   restore.point.options(display.restore.point = TRUE)
 
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = TeacherHubApp(course.dir=course.dir,init.userid="kranz", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE)
+  app = TeacherHubApp(course.dir=course.dir,init.userid="sebastian.kranz@uni-ulm.de", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE, validate.userid.fun=function(...) {return(list(ok=TRUE))})
   res = viewApp(app, port=app$glob$opts$teacherhub$port,launch.browser = rstudioapi::viewer)
 
   if (dir.exists(res)) {
@@ -60,7 +60,7 @@ TeacherHubApp = function(course.dir, courseid = basename(course.dir)
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
 
 
-  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, app.url = glob$opts$teacherhub$url, smtp=smtp, ...)
+  lop = loginModule(db.arg = db.arg, login.fun=teacher.hub.login, app.title=app.title,container.id = "centerUI",token.dir = token.dir, login.by.query.key=login.by.query.key, allowed.userids=glob$opts$teachers, app.url = glob$opts$teacherhub$url, smtp=smtp, cookie.name=paste0("courserTeacherHub_",courseid), ...)
 
   restore.point("TeacherHubApp.with.lop")
 
@@ -109,7 +109,7 @@ init.th.opts = function(course.dir, file = file.path(course.dir,"course/settings
   opts
 }
 
-teacher.hub.login = function(userid,app=getApp(),tok=NULL,...) {
+teacher.hub.login = function(userid,app=getApp(),tok=NULL,lop=NULL,...) {
   restore.point("teacher.hub.login")
 
   course.dir = app$glob$course.dir
@@ -118,8 +118,7 @@ teacher.hub.login = function(userid,app=getApp(),tok=NULL,...) {
 
 
   # If we don't have a permanent tokens
-  # write a temporary token
-  # valid for 24 hours
+  # specify a token for presenter login
   if (is.null(tok)) {
     # clean up temporary tokens from time to time
     if (runif(1)<0.3)
@@ -138,6 +137,21 @@ teacher.hub.login = function(userid,app=getApp(),tok=NULL,...) {
   } else {
     set.login.token.cookie(tok=tok,"courserPresenterCookie")
   }
+
+  # Handlers to set and remove permament loginCookies
+  buttonHandler("thSetCookieBtn", function(...) {
+    tok = make.login.token(userid=userid,validMinutes = 60*24*365)
+    write.login.token(tok, app$glob$token.dir)
+    set.login.token.cookie(tok,lop$cookie.name, expires=365)
+    timedMessage("thSettingsAlert","One year login cookie has been set.")
+  })
+  # Handlers to set and remove permament loginCookies
+  buttonHandler("thRemoveCookieBtn", function(...) {
+    removeCookie(lop$cookie.name)
+    timedMessage("thSettingsAlert","One year login cookie has been removed.")
+  })
+
+
 
   th = as.environment(nlist(
     userid,
@@ -231,19 +245,18 @@ th.center.ui = function(th,opts=app$glob$opts, app=getApp()) {
     h3("Peerquiz Timetable"),
     pq.timetable.ui(pq.dir=opts$pq.dir)
   )
-#
-#   part.ui = tagList(
-#     h3("Participants"),
-#     uiOutput("uiStudNumMsg"),
-#     textAreaInput("thStudsInDB",label = ""),
-#     textAreaInput("thNewStudents", label="Emailadresses of new students (can be copied from Moodle)"),
-#     simpleButton("thSendWelcomeEmailBtn","Add to DB and send Welcome Email")
-#   )
+  settings.ui = tagList(
+    simpleButton("thSetCookieBtn","Set one year login cookie"),
+    simpleButton("thRemoveCookieBtn","Remove login cookie"),
+    uiOutput("thSettingsAlert")
+  )
+
 
   tabsetPanel(
-    tabPanel("Time table", tt.ui)
-    #tabPanel("Participants", part.ui)
+    tabPanel("Time table", tt.ui),
+    tabPanel("Settings", settings.ui)
   )
+
 
 }
 
