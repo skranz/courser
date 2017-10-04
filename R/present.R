@@ -101,8 +101,11 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
 
 library("courser")
 
+# Local Mathjax does not correctly displays
+options(use.local.mathjax=FALSE)
+
 # turn off restore points for better performance
-# set.storing(FALSE)
+set.storing(FALSE)
 
 slides.dir = "',slides.dir,'"
 clicker.dir = "',opts$clicker.dir,'"
