@@ -67,6 +67,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
     cp$apq = init.apq(pq.dir=cp$pq.dir)
   }
   app$ui = fluidPage(
+    mathjaxHeader(),
     if (opts$has.pq) pq.guess.headers(),
     uiOutput("mainUI")
   )
@@ -481,6 +482,5 @@ coursepage.compile.welcome.email = function(cp, file = file.path(cp$course.dir, 
   cp$welcome.email.cr.li = cr.li
   cr.li
 }
-
 
 
