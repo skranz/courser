@@ -82,6 +82,7 @@ compute.course.peerquiz.highscore = function(course.dir, inflation.rate = 0, pq.
   # find finished pq
   rows = tt$active & is.true(tt$end_guess <= Sys.time())
   ids = tt$id[rows]
+  if (length(ids)==0) return(NULL)
 
 
   # compute points for every finished pq
