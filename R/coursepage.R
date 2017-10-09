@@ -115,7 +115,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 }
 
 
-coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,...) {
+coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,login.mode="",...) {
   restore.point("coursepage.login")
 
   cp = app$cp
@@ -127,6 +127,9 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,...) {
 
   # save login in database
   dbInsert(db,"login_hist", vals=nlist(login_time=Sys.time(), userid=userid, showRanking=isTRUE(cp$stud$showRanking)),  schemas = student.schemas())
+
+  # set tracker cookie entry
+  courser.track.cookie(courseid=cp$courseid, token.dir=cp$token.dir,userid = userid,login.app = "coursepage", login.mode = login.mode)
 
 
   # student does not yet exist
