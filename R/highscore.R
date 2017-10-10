@@ -14,12 +14,56 @@ examples.update.courser.highscore = function() {
 
 }
 
-compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5) {
+find.smallest.upper.bound.ind = function(x, vec, larger.as.na=TRUE) {
+  restore.point("find.smallest.upper.bound")
+  res = findInterval(x, vec, left.open=TRUE)+1
+  if (larger.as.na) {
+    res[res>length(vec)] = NA_integer_
+  }
+  res
+}
+
+clicker.adapt.data.for.home.sub = function(df) {
+
+  # Home submissions will be mapped to the tag
+  # with the next closest dat if such a tag exists
+  sub.time = df %>%
+    group_by(task.id, tag) %>%
+    summarize(last.submit = max(submit.time)) %>%
+    filter(tag != "home") %>%
+    arrange(last.submit)
+
+  sub.match = find.smallest.upper.bound.ind(df$submit.time, sub.time$last.submit)
+
+  df$matched.tag = sub.time$tag[sub.match]
+  df$from.home = df$tag == "home"
+
+
+  df = filter(df, !(from.home & is.na(matched.tag)))
+
+  # Set tag to matched tag for answers from home
+  df$tag[df$from.home] = df$matched.tag[df$from.home]
+
+  # Find which userid tag combinations
+  # have ansers from the lecture
+  df = df %>% group_by(task.id, tag, userid) %>%
+    mutate(has.course.answer = any(!from.home)) %>%
+    ungroup()
+
+  # Remove from.home answers if there was an
+  # answer in the lecture
+  df = filter(df, !(has.course.answer & from.home))
+  df
+}
+
+compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5, home.factor = 0.8) {
   restore.point("compute.course.clicker.highscore")
   clicker.dir = file.path(course.dir,"course/clicker")
   df = update.all.aggregate.task.data(clicker.dir,return.data = TRUE)
 
   if (NROW(df)==0) return(NULL)
+
+  df = clicker.adapt.data.for.home.sub(df)
 
   # create session.date and session.num
   df = df %>%
@@ -32,9 +76,14 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   # increasing session numbers
   df$session.num = match(df$session.date, session.dates)
 
-  # Just for testing reasons to generate some different
-  # session numbers
-  #df$session.num = match(df$task.id, unique(df$task.id))
+
+
+  # only take last submission for a given tag
+  # and weight home points
+  df = group_by(df, task.id, tag, userid) %>%
+    filter(submit.time==max(submit.time)) %>%
+    ungroup() %>%
+    mutate(points=mean(points)*ifelse(from.home,home.factor,1))
 
   # compute scores for each session
   sdf = df %>%
@@ -101,8 +150,6 @@ compute.course.peerquiz.highscore = function(course.dir, inflation.rate = 0, pq.
   sdf = df %>%
     mutate(adj.points = points*(1+inflation.rate)^(session.num-1))
 
-
-
   # filling missing observations with 0
   library(tidyr)
   sdf = tidyr::expand(sdf, nesting(session.num,session.date), userid  ) %>%
@@ -138,15 +185,6 @@ user.highscore.svg = function(dat, userid=NULL, return.bb = FALSE, width=480, he
 
   dat = dat[dat$userid == userid,]
 
-  # random data
-  #nse = 10
-  #x = 1:nse
-  #gain = sample(-20:20, nse, replace=TRUE)
-  #dat=data_frame(session.num=x, rank=50+gain, session.rank=gain, adj.points=6, cum.adj.points=20)
-
-
-
-
   x = dat$session.num
   rank = dat$rank
 
@@ -159,22 +197,20 @@ user.highscore.svg = function(dat, userid=NULL, return.bb = FALSE, width=480, he
   if (is.null(tooltip.fun)) {
     if (lang=="de") {
       tooltip.fun = function(data,...) {
-        restore.point("hdfkdhf")
-        paste0(session.label," ", data$session.num, "\nPunkte: ", data$adj.points,"\nRank: ", data$session.rank, "\nGesamtpunkte: ", data$cum.adj.points, "\nGesamtrank ", data$rank)
+        paste0(session.label," ", data$session.num, "\nPunkte: ", round(data$adj.points,1),"\nRang: ", data$session.rank, "\nGesamtpunkte: ", round(data$cum.adj.points,1), "\nGesamtrang: ", data$rank)
       }
     } else {
       tooltip.fun = function(data,...) {
         restore.point("custom.tooltip.fun")
-        paste0(session.label, data$session.num, "\nRank ", data$rank)
-
+        paste0(session.label," ", data$session.num, "\nPoints: ", round(data$adj.points,1),"\nRank: ", data$session.rank, "\nTotal Points: ", round(data$cum.adj.points,1), "\nTotal rank: ", data$rank)
       }
-
     }
   }
 
 
   n = length(x)
-  bb = bb_pane(show.ticks = TRUE,yrange=yrange,org.width = width, org.height=height) %>%
+  xrange = c(0.5, n+0.5)
+  bb = bb_pane(show.ticks = TRUE,yrange=yrange,xrange=xrange,org.width = width, org.height=height) %>%
     bb_series(x = x,y=-rank, color="#000088", draw.points=TRUE,line.alpha=0.5) %>%
     bb_yaxis(show.grid = TRUE, show.line=TRUE,ticks=ticks, tick.labels=tick.labels, label=ylab) %>%
     bb_xaxis(ticks=x,label=xlab,labelpos = "center") %>%

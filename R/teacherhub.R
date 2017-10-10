@@ -8,6 +8,7 @@ examples.teacherhub = function() {
 
   if (dir.exists(res)) {
     source(file.path(res,"app.R"))
+    set.storing(TRUE)
     viewApp(app)
     #restore.point.options(display.restore.point = TRUE)
     #shiny::runApp(res,launch.browser = rstudioapi::viewer)

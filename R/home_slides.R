@@ -35,11 +35,15 @@ courserHomeSlidesApp = function(courseid="", slides.dir, token.dir,clicker.dir, 
 
   # save.nothing = TRUE prevents creation of an .ups file
   app = slidesApp(ps = ps,user.name = ".HOME.",dir = slides.dir, opts=list(courseid=courseid, clicker.dir=clicker.dir, rtutor=TRUE,save.nothing=TRUE))
+  #app$glob$courseid = courseid
+  #app$glob$token.dir = token.dir
 
   # require correct query key in url
   if (require.query.key) {
     orgInitHandler = app$initHandler
-    login.fun = function(...) {
+    login.fun = function(userid=userid,..., app=getApp()) {
+      restore.point("homeSlidesLoginFun")
+      app$userid = userid
       orgInitHandler(...,app=getApp())
     }
     login.failed.fun = function(...) {
@@ -89,9 +93,9 @@ makeHomeSlidesAppDir = function(courseid,slides,local=opts$local, course.dir=opt
   }
 
   if (local) {
-    slides.dir = paste0("../../../", "slides/", slides)
-    clicker.dir = paste0("../../", "clicker")
-    token.dir = paste0("../../", "stud_tokens")
+    slides.dir = paste0("../../../../", "slides/", slides)
+    clicker.dir = paste0("../../../", "clicker")
+    token.dir = paste0("../../../", "stud_tokens")
   } else {
     # In a docker container, we have a fixed directory structure
     slides.dir = file.path("/srv/slides",slides)

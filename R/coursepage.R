@@ -104,7 +104,11 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 
 
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
-  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, cookie.name="courserStudentLoginToken", smtp=smtp, app.url = opts$coursepage$url, ...)
+  lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, smtp=smtp, app.url = opts$coursepage$url,
+#cookie.name="courserStudentLoginToken",
+    ...
+
+    )
 
   restore.point("CoursePageApp.with.lop")
 
@@ -141,8 +145,21 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,login.mod
 
   cp$stud = as.list(cp$stud)
 
+  # Recreate login token if it has been deleted
+  if (!file.exists(file.path(cp$token.dir,cp$stud$token))) {
+    tok = make.login.token(userid = userid,key = cp$stud$token)
+    write.login.token(tok=tok, token.dir=cp$token.dir)
+
+  }
+
+
   # Set cookie to login into clicker
   set.login.token.cookie(tok=list(userid=cp$stud$userid, key=cp$stud$token), "courserClickerCookie")
+
+  set.login.token.cookie(tok=list(userid=cp$stud$userid, key=cp$stud$token), "courserStudentLoginCookie")
+
+
+
 
   show.coursepage()
 }
