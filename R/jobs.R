@@ -300,6 +300,12 @@ cojo_send_emails = function(jo) {
     cat("\nSend email to ", stud$email, " with title ",jo$email.subject[row],"...")
     sendmailR::sendmail(from=from, to=stud$email, subject=jo$email.subject[row], msg = sep.lines(jo$email.txt[row]), control=control)
   }
+
+  # Create a last.email.file to avoid double
+  # sending of clicker.highscore
+  last.email.file = file.path(jo$course.dir,"course","clicker","LAST_EMAIL.txt")
+  writeLines("send", last.email.file)
+
   jo
 }
 
