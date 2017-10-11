@@ -288,7 +288,7 @@ cojo_send_emails = function(jo) {
   control = list(smtpServer = jo$settings$smtpServer)
   for (row in rows) {
     stud = as.list(jo$students[row,])
-    if (!has.substr("@",stud$email)) {
+    if (!isTRUE(has.substr(stud$email,"@"))) {
       cat("\nskip email for ", stud$email, " since that is no vald email adress.")
       next
     }
