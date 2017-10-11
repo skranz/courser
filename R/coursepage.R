@@ -63,6 +63,10 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   cp = as.environment(opts)
   cp$smtp = cp$email
 
+  cp$db = get.studentdb(cp=cp)
+  cp$students = dbGet(cp$db,"students",schemas = student.schemas())
+
+
   if (opts$has.pq) {
     cp$apq = init.apq(pq.dir=cp$pq.dir)
   }
@@ -85,12 +89,13 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 
 
 
-  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir)
+  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir, students=students)
   if (opts$has.pq) {
     app$glob$peerquiz.hs = compute.course.peerquiz.highscore(course.dir = course.dir)
   }
 
   app$glob$num.studs = length(unique(app$glob$clicker.hs$userid))
+  app$glob$num.registered = length(unique(cp$students$userid))
 
   app$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
@@ -128,6 +133,7 @@ coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,login.mod
   db = cp$db = get.studentdb()
 
   cp$stud = dbGet(db,"students",params = nlist(userid), schemas = student.schemas())
+
 
   # save login in database
   dbInsert(db,"login_hist", vals=nlist(login_time=Sys.time(), userid=userid, showRanking=isTRUE(cp$stud$showRanking)),  schemas = student.schemas())
@@ -317,9 +323,19 @@ compile.coursepage = function(course.dir, page.file = file.path(course.dir,"cour
   cr
 }
 
+coursepage_num_unregistered = function(..., app=getApp(), cp=app$cp) {
+  app$glob$num.studs - app$glob$num.registered
+}
+
+
 coursepage_num_students = function(..., app=getApp(), cp=app$cp) {
   app$glob$num.studs
 }
+
+coursepage_num_registered = function(..., app=getApp(), cp=app$cp) {
+  app$glob$num.registered
+}
+
 
 coursepage_current_tasks = function(...,cp=app$cp, app=getApp()) {
   restore.point("coursepage_current_tasks")

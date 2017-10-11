@@ -1,12 +1,13 @@
-examples.finde.courser.jobs = function() {
+examples.find.courser.jobs = function() {
   restore.point.options(display.restore.point=TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
+  setwd(course.dir)
 
   jo = cojo_init(course.dir=course.dir) %>%
     cojo_find()
 
   jo = jo %>%
-    cojo_perform(jobs="peerquiz")
+    cojo_perform()
 
   jo = jo%>%
     cojo_send_emails()
@@ -38,6 +39,8 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
   students$url.clicker = paste0(settings$base_url,":",settings$clicker$port,"/clicker?key=", students$token)
 
   students$url.coursepage = paste0(settings$base_url,":",settings$coursepage$port,"/coursepage?key=", students$token)
+
+
 
   pq.dir = file.path(course.dir,"course","peerquiz")
   has.pq = dir.exists(pq.dir)
@@ -146,7 +149,7 @@ cojo_perform_clicker = function(jo) {
   restore.point("cojo_perform_clicker")
   course.dir = jo$course.dir;
 
-  hs = compute.course.clicker.highscore(course.dir=course.dir)
+  hs = compute.course.clicker.highscore(course.dir=course.dir, students=jo$students)
 
   if (is.null(hs)) return(jo)
 
@@ -170,27 +173,28 @@ cojo_perform_peerquiz = function(jo, tt=NULL) {
 
   pqs = get.pq.states(tt=tt)
 
-  # check if there was run new clicker task tag
-  # since the highscore was last send
   last.email.file = file.path(course.dir,"course","peerquiz","LAST_EMAIL.json")
-
+  cdf = filter(pqs, active)
   if (file.exists(last.email.file)) {
-    stop("TO DO")
+    old.sdf = read_json(last.email.file,TRUE)
+    colnames(old.sdf)[2] = "prev.state"
+    cdf = left_join(cdf, old.sdf, by="id")
+    cdf$prev.state[is.na(cdf$prev.state)] = ""
   } else {
-    cdf = filter(pqs, active)
-    sdf = cdf %>%
-      select(id, state)
-
+    cdf$prev.state = ""
   }
 
   # add jobs depending on new state in cdf
-  for (row in seq_len(NROW(cdf))) {
-    jo = cojo.peerquiz.email(jo=jo,pqs = cdf[row,])
+  # Add to email if we have a new state
+  for (row in which(cdf$state != cdf$prev.state)) {
+    pqs = cdf[row,]
+    jo = cojo.peerquiz.email(jo=jo,pqs = pqs)
   }
 
 
+  sdf = select(cdf, id, state)
   # save new states
-  #write_json(sdf,last.email.file)
+  write_json(sdf,last.email.file)
 
   jo
 }
@@ -206,7 +210,7 @@ cojo.peerquiz.email = function(jo, id=pqs$id, state=pqs$state,pqs, pq=load.or.co
 
   str = rep("", NROW(jo$students))
   if (state == "write") {
-    str = render.vectorized.compiled.rmd(jo$em.cr.li$peerquiz_write,enclos = env)
+    str = render.vectorized.compiled.rmd(jo$em.cr.li$peerquiz_write,df = jo$students,enclos = env)
   } else if (state=="guess") {
     str = render.vectorized.compiled.rmd(jo$em.cr.li$peerquiz_guess,df = jo$students,enclos = env)
   } else if (state == "closed") {
@@ -236,7 +240,11 @@ cojo.clicker.highscore.email = function(jo, hs, session.num) {
 
   str = rep("", NROW(jo$students))
 
-  rows = jo$students$emailRanking
+  # select students who participated
+  # at least once at the quiz
+  # and who have set option to send
+  # email ranking
+  rows = jo$students$emailRanking & !is.na(df$cum.points)
   if (sum(rows)>0) {
     str[rows] = render.vectorized.compiled.rmd(jo$em.cr.li$quiz_ranking, df[rows,],enclos = jo$email.enclos)
   }
@@ -249,6 +257,10 @@ cojo.clicker.highscore.email = function(jo, hs, session.num) {
 
 cojo.make.full.emails = function(jo) {
   restore.point("cojo.make.full.emails")
+
+  is.email = grepl("@", jo$students$email, fixed=TRUE)
+  jo$send.email = jo$send.email & is.email
+
   rows = which(jo$send.email)
   n = length(rows)
   jo$email.txt = jo$email.title = header = footer = rep("", NROW(jo$students))

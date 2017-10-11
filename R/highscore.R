@@ -56,7 +56,7 @@ clicker.adapt.data.for.home.sub = function(df) {
   df
 }
 
-compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5, home.factor = 0.8) {
+compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5, home.factor = 0.8, students=NULL) {
   restore.point("compute.course.clicker.highscore")
   clicker.dir = file.path(course.dir,"course/clicker")
   df = update.all.aggregate.task.data(clicker.dir,return.data = TRUE)
@@ -96,6 +96,16 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
       points = sum(points),
     ) %>%
     ungroup()
+
+
+  # Add students from DB
+  # who have not entered any answer
+  if (!is.null(students) & NROW(sdf)>0) {
+    add.id = setdiff(students$userid,unique(sdf$userid))
+    # Dummy entries with 0 points
+    add.df = fast_df(session.num=sdf$session.num[1],session.date = sdf$session.date[1],userid=add.id,adj.points=0,points=0)
+    sdf = rbind(sdf, add.df)
+  }
 
 
   # filling missing observations with 0
