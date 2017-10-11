@@ -65,6 +65,7 @@ cojo_init = function(jo=NULL,course.dir=jo$course.dir, db = get.studentdb(course
 
   email.enclos = as.environment(list(
     num.stud = NROW(students),
+    num.clicker = 0,
     course.title = jo$course.title
   ))
   parent.env(email.enclos) = parent.frame()
