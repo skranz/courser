@@ -98,7 +98,7 @@ makePresenterAppDir = function(courseid,slides,teacher="Teacher", opts, hash=ran
 
   code = paste0('
 # Automatically generated presentation app
-
+Sys.umask("000")
 library("courser")
 
 # Local Mathjax does not correctly displays

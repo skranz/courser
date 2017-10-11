@@ -106,7 +106,7 @@ makeHomeSlidesAppDir = function(courseid,slides,local=opts$local, course.dir=opt
 
   code = paste0('
 # Automatically generated presentation app
-
+Sys.umask("000")
 library("courser")
 slides.dir = "',slides.dir,'"
 clicker.dir = "',clicker.dir,'"
