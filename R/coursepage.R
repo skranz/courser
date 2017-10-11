@@ -89,7 +89,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 
 
 
-  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir, students=students)
+  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir, students=cp$students)
   if (opts$has.pq) {
     app$glob$peerquiz.hs = compute.course.peerquiz.highscore(course.dir = course.dir)
   }
