@@ -276,12 +276,13 @@ cojo.make.full.emails = function(jo) {
   str = do.call(paste0, c(list(header),jo$em.li,list(footer)))
   jo$email.txt = str
 
-  cat(str)
+  #cat(str)
   jo
 }
 
 
 cojo_send_emails = function(jo) {
+  restore.point("cojo_send_emails")
   rows = which(jo$send.email)
 
   from = jo$settings$from
@@ -295,7 +296,7 @@ cojo_send_emails = function(jo) {
     cat("\nSend email to ", stud$email, " with title ",jo$email.subject[row],"...")
     sendmailR::sendmail(from=from, to=stud$email, subject=jo$email.subject[row], msg = sep.lines(jo$email.txt[row]), control=control)
   }
-
+  jo
 }
 
 
