@@ -285,8 +285,8 @@ cojo_send_emails = function(jo) {
   restore.point("cojo_send_emails")
   rows = which(jo$send.email)
 
-  from = jo$settings$from
-  control = list(smtpServer = jo$settings$smtpServer)
+  from = jo$settings$email$from
+  control = list(smtpServer = jo$settings$email$smtpServer)
   for (row in rows) {
     stud = as.list(jo$students[row,])
     if (!is.true(has.substr(stud$email,"@"))) {
