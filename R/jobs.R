@@ -153,6 +153,9 @@ cojo_perform_clicker = function(jo) {
 
   if (is.null(hs)) return(jo)
 
+  jo$email.enclos$num.clicker = length(unique(hs$userid))
+
+
   # specify sessions that will be included in the emails
   session.nums = unique(hs$session.num)
   session.nums = session.nums[session.nums > jo$last.email.clicker.session.num]
