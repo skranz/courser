@@ -11,7 +11,7 @@ fields:
 #      auch später noch ändern.
   gender:
     label: 'Geschlecht'
-    choices: {'Männlich': m, 'Weiblich': f}
+    choices: {'Männlich': m, 'Weiblich': f, 'Unbestimmt': x}
   subject:
     label: 'Studiengang'
     choices:

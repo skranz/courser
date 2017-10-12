@@ -111,6 +111,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   db.arg = list(dbname=paste0(login.db.dir,"/userDB.sqlite"),drv=SQLite())
   lop = loginModule(db.arg = db.arg, login.fun=coursepage.login, app.title=app.title,container.id = "mainUI",login.by.query.key = login.by.query.key, token.dir=token.dir, smtp=smtp, app.url = opts$coursepage$url,
 #cookie.name="courserStudentLoginToken",
+
     ...
 
     )
@@ -523,5 +524,4 @@ coursepage.compile.welcome.email = function(cp, file = file.path(cp$course.dir, 
   cp$welcome.email.cr.li = cr.li
   cr.li
 }
-
 
