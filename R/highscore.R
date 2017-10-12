@@ -57,12 +57,13 @@ clicker.adapt.data.for.home.sub = function(df) {
 }
 
 is.courser.clicker.highscore.up.to.date = function(course.dir) {
-  last.task.file = file.path(course.dir,"course","clicker","LAST_TASK.txt")
-
-  if (!file.exists(last.task.file)) return(TRUE)
-
   hs.file = file.path(course.dir, "course","clicker","highscore","highscore.Rds")
   if ((!file.exists(hs.file))) return(FALSE)
+
+
+  last.task.file = file.path(course.dir,"course","clicker","LAST_TASK.txt")
+  if (!file.exists(last.task.file)) return(TRUE)
+
 
   task.time = file.mtime(last.task.file)
   hs.time = file.mtime(hs.file)
