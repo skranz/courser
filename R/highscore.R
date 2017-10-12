@@ -129,9 +129,12 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   # who have not entered any answer
   if (!is.null(students) & NROW(sdf)>0) {
     add.id = setdiff(students$userid,unique(sdf$userid))
-    # Dummy entries with 0 points
-    add.df = fast_df(session.num=sdf$session.num[1],session.date = sdf$session.date[1],userid=add.id,adj.points=0,points=0)
-    sdf = rbind(sdf, add.df)
+    if (length(add.id)>0) {
+      # Dummy entries with 0 points
+      add.df = fast_df(session.num=sdf$session.num[1],session.date = sdf$session.date[1],userid=add.id,adj.points=0,points=0)
+      sdf = rbind(sdf, add.df)
+
+    }
   }
 
 
