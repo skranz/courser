@@ -89,7 +89,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 
 
 
-  app$glob$clicker.hs = compute.course.clicker.highscore(course.dir = course.dir, students=cp$students)
+  app$glob$clicker.hs = get.course.clicker.highscore(course.dir = course.dir, students=cp$students)
   if (opts$has.pq) {
     app$glob$peerquiz.hs = compute.course.peerquiz.highscore(course.dir = course.dir)
   }
@@ -256,6 +256,11 @@ coursepage.new.student.modals = function(cp, app=getApp()) {
 
 show.coursepage = function(app=getApp(), cp=app$cp) {
   restore.point("show.coursepage")
+
+  # Possibly update highscore
+  if (!is.courser.clicker.highscore.up.to.date(cp$course.dir)) {
+    app$glob$clicker.hs = get.course.clicker.highscore(course.dir = course.dir, students=cp$students)
+  }
 
   cp$cp.ui = rmdtools::render.compiled.rmd(cp$cr, envir=cp$stud,out.type = "shiny")
   cp$settings.ui = student.settings.ui(cp=cp,values = cp$stud,submit.handler = coursepage.submit.settings)

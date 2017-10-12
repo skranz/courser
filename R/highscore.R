@@ -56,7 +56,33 @@ clicker.adapt.data.for.home.sub = function(df) {
   df
 }
 
-compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5, home.factor = 0.8, students=NULL) {
+is.courser.clicker.highscore.up.to.date = function(course.dir) {
+  last.task.file = file.path(course.dir,"course","clicker","LAST_TASK.txt")
+
+  if (!file.exists(last.task.file)) return(TRUE)
+
+  hs.file = file.path(course.dir, "course","clicker","highscore","highscore.Rds")
+  if ((!file.exists(hs.file))) return(FALSE)
+
+  task.time = file.mtime(last.task.file)
+  hs.time = file.mtime(hs.file)
+
+  task.time <= hs.time
+}
+
+get.course.clicker.highscore = function(course.dir, force.new=FALSE,...) {
+  restore.point("get.course.clicker.highscore")
+  up.to.date = is.courser.clicker.highscore.up.to.date(course.dir)
+  if (!up.to.date | force.new) {
+    compute.course.clicker.highscore(course.dir, ...)
+  } else {
+    df = readRDS(file.path(course.dir, "course","clicker","highscore","highscore.Rds"))
+    as_data_frame(df)
+  }
+
+}
+
+compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", inflation.rate = 0.12, n.exp = 0.5, home.factor = 0.8, students=NULL, save=TRUE) {
   restore.point("compute.course.clicker.highscore")
   clicker.dir = file.path(course.dir,"course/clicker")
   df = update.all.aggregate.task.data(clicker.dir,return.data = TRUE)
@@ -130,6 +156,10 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
     group_by(userid) %>%
     mutate(rank.change = rank - lag(rank)) %>%
     ungroup()
+
+  if (save) {
+    saveRDS(sdf, file.path(course.dir, "course","clicker","highscore","highscore.Rds"))
+  }
 
   sdf
 }
