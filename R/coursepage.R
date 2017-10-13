@@ -97,7 +97,7 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
   app$glob$num.studs = length(unique(app$glob$clicker.hs$userid))
   app$glob$num.registered = length(unique(cp$students$userid))
 
-  app$cp = cp
+  app$cp = app$glob$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
 
   cp$send.welcome.email = send.welcome.email
@@ -128,7 +128,20 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 coursepage.login = function(userid=app$cp$userid,app=getApp(),tok=NULL,login.mode="",...) {
   restore.point("coursepage.login")
 
-  cp = app$cp
+  # make session specific copy of cp
+  cp = as.environment(as.list(app$glob$cp))
+  app$cp = cp
+
+
+  # update peerquiz
+  if (isTRUE(cp$has.pq)) {
+    cp$apq = update.apq(cp$apq)
+    # Update also global apq
+    app$glob$cp$apq = cp$apq
+
+  }
+
+
   cp$userid = cp$email = userid
 
   db = cp$db = get.studentdb()
