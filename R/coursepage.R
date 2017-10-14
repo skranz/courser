@@ -96,6 +96,8 @@ CoursePageApp = function(course.dir, courseid = basename(course.dir), login.db.d
 
   app$glob$num.studs = length(unique(app$glob$clicker.hs$userid))
   app$glob$num.registered = length(unique(cp$students$userid))
+  app$glob$num.unregistered = length(setdiff(unique(app$glob$clicker.hs$userid),cp$students$userid))
+
 
   app$cp = app$glob$cp = cp
   cp$cr = compile.coursepage(course.dir=course.dir, cp=cp)
@@ -343,7 +345,7 @@ compile.coursepage = function(course.dir, page.file = file.path(course.dir,"cour
 }
 
 coursepage_num_unregistered = function(..., app=getApp(), cp=app$cp) {
-  app$glob$num.studs - app$glob$num.registered
+  app$glob$num.unregistered
 }
 
 
