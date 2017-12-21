@@ -109,8 +109,8 @@ compute.course.clicker.highscore = function(course.dir, multi.tag.action="all", 
   # and weight home points
   df = group_by(df, task.id, tag, userid) %>%
     filter(submit.time==max(submit.time)) %>%
-    ungroup() %>%
-    mutate(points=mean(points)*ifelse(from.home,home.factor,1))
+    mutate(points=mean(points, na.rm=TRUE)*ifelse(from.home,home.factor,1)) %>%
+    ungroup()
 
   # compute scores for each session
   sdf = df %>%

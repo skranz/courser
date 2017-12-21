@@ -1,7 +1,7 @@
 examples.coursepage = function() {
   restore.point.options(display.restore.point = TRUE)
   course.dir = "D:/libraries/courser/courses/vwl"
-  app = CoursePageApp(course.dir=course.dir,init.userid="random_10", need.password=FALSE, need.user=TRUE, fixed.password="test", use.signup=FALSE, send.welcome.email = FALSE)
+  app = CoursePageApp(course.dir=course.dir,init.userid="sebastian.kranz@uni-ulm.de", need.password=FALSE, need.user=FALSE, fixed.password="test", use.signup=FALSE, send.welcome.email = FALSE)
 
   res = viewApp(app, port=app$glob$opts$student$port,launch.browser = rstudioapi::viewer)
   try(dbDisconnect(app$glob$studentdb))
@@ -20,16 +20,18 @@ student.schemas = function(app=getApp()) {
 
 }
 
-get.studentdb = function(course.dir = cp$course.dir, db=app$glob[["studentdb"]], app = getApp(), cp=app$cp) {
+get.studentdb = function(course.dir = cp$course.dir, db=app$glob[["studentdb"]], app = getApp(), cp=app$cp, create=FALSE, schemas=student.schemas()) {
   if (!is.null(db)) return(db)
 
   db.dir = file.path(course.dir,"course", "db")
   db.file = file.path(db.dir,"students.sqlite")
   if (!file.exists(db.file)) {
+    if (!create) stop(paste0("No database students.sqlite found in ", db.dir))
     db = create.studentdb(course.dir=course.dir)
   } else {
     db = dbConnect(SQLite(),dbname = file.path(db.dir,"students.sqlite"))
   }
+  db = set.db.schemas(db, schemas)
   if (!is.null(app$glob))
     app$glob$studentdb = db
   db
