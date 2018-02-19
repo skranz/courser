@@ -491,7 +491,7 @@ redraw.course.student.token = function(cp=app$cp, nchar=30, db=app$glob$studentd
   if (set.cookie)
     try(set.login.token.cookie(tok=tok,cp$cookie.name))
 
-  if (!is.null(cp$stud))
+  if (NROW(cp$stud)>0)
     cp$stud$token= tok$key
 
   if (reset.links) {
